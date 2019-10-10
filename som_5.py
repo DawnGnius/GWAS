@@ -1,6 +1,7 @@
 import numpy as np
 import pylab as pl
 
+# 适用于一般的数据. 在三维空间中的. 
 
 class SOM(object):
     def __init__(self, X, output, iteration, batch_size):

@@ -1,6 +1,7 @@
 import numpy as np
 import pylab as pl
-
+import random
+random.seed(1113)
 
 class SOM(object):
     def __init__(self, X, output, iteration, batch_size):
@@ -35,7 +36,7 @@ class SOM(object):
         ed = float(max(max(self.X[:,0])-min(self.X[:,0]), max(self.X[:,1])-min(self.X[:,1])))
         self.W = self.W * ed * 11 / 10
 
-        file_name = './fig4/fig0.png'
+        file_name = './fig5/fig0.png'
         self.draw(W=self.W, data=self.X, file_name=file_name)
 
     def GetN(self, t):
@@ -109,6 +110,7 @@ class SOM(object):
         winner:  一个一维向量，batch_size个获胜神经元的下标
         return:  返回值是调整后的 W
         """
+        random.seed(1113)
         self.count = 0               # 迭代次数, 并不是拓扑距离...
         while self.iteration > self.count:
             train_X = self.X[np.random.choice(self.X.shape[0], self.batch_size)]    # 可重复抽样
@@ -120,7 +122,7 @@ class SOM(object):
             self.count += 1
 
             # save learning result
-            file_name = './fig4/fig'+str(self.count)+'.png'
+            file_name = './fig5/fig'+str(self.count)+'.png'
             self.draw(W=self.W, data=self.X, file_name=file_name)
 
         return self.W
@@ -132,78 +134,153 @@ class SOM(object):
         return clusters, self.W
 
     def draw(self, W, data=[], C=[], file_name=1):
-        pl.figure(figsize=(14, 6))
-        colValue = ['y', 'g', 'b', 'c', 'k', 'm', 'peru', 'darkorchid']
+        if file_name != 1:
+            pl.figure(figsize=(14, 6))
+            colValue = ['y', 'g', 'b', 'c', 'k', 'm', 'peru', 'darkorchid']
 
-        # 聚类图像
-        pl.subplot(1,2,1)
-        # 普通的样本
-        if len(data) != 0:
-            pl.plot(data[:,0], data[:,1], 'ko', markersize="5")
+            # 聚类图像
+            pl.subplot(1,2,1)
+            # 普通的样本
+            if len(data) != 0:
+                pl.plot(data[:,0], data[:,1], 'ko', markersize="5")
 
-        # 分类的样本
-        if len(C) != 0:
-            for i in range(len(C)):
-                coo_X = []  # x坐标列表
-                coo_Y = []  # y坐标列表
-                for j in range(len(C[i])):
-                    coo_X.append(C[i][j][0])
-                    coo_Y.append(C[i][j][1])
-                pl.scatter(coo_X, coo_Y, marker='o', color=colValue[i % len(colValue)], label=i)
+            # 分类的样本
+            if len(C) != 0:
+                for i in range(len(C)):
+                    coo_X = []  # x坐标列表
+                    coo_Y = []  # y坐标列表
+                    for j in range(len(C[i])):
+                        coo_X.append(C[i][j][0])
+                        coo_Y.append(C[i][j][1])
+                    pl.scatter(coo_X, coo_Y, marker='o', color=colValue[i % len(colValue)], label=i)
 
-            pl.legend(loc='upper right')
+                pl.legend(loc='upper right')
 
-        # 神经元
-        pl.plot(W[:,0], W[:,1], "ro", marker='o', markersize="7")
-        for index in range(self.output[0]*self.output[1]):
-            for i in range(self.output[0]*self.output[1]):
-                dist = self.Manhattan_dist(i, index)
-                if dist == 1: 
-                    pl.plot(W[[i,index],0], W[[i,index],1], "r")
-        
-        pl.xlabel('X')
-        pl.ylabel('Y')
-        pl.title('SOM')
-        pl.xlim(-5, 25)
-        pl.ylim(-5, 25)
+            # 神经元
+            pl.plot(W[:,0], W[:,1], "ro", marker='o', markersize="7")
+            for index in range(self.output[0]*self.output[1]):
+                for i in range(self.output[0]*self.output[1]):
+                    dist = self.Manhattan_dist(i, index)
+                    if dist == 1: 
+                        pl.plot(W[[i,index],0], W[[i,index],1], "r")
+            
+            pl.xlabel('X')
+            pl.ylabel('Y')
+            pl.title('SOM')
+            pl.xlim(-5, 25)
+            pl.ylim(-5, 25)
 
-        # 邻域半径图像
-        pl.subplot(2,2,2)
-        pl.title('Radius of Neighborhood')
-        pl.ylabel('Manhattan Distance')
-        x = np.linspace(0, self.iteration, self.iteration+1)
-        y = np.power(1.115, -x) * 4
-        pl.plot(x,y)
-        font1 = {'family': 'Times New Roman', 'weight': 'normal', 'size': 18}
-        pl.text(20,3.5,r'$D = 4 \times 1.115^{-t}$', font1)
-        if file_name!=1:
+            # 邻域半径图像
+            pl.subplot(2,2,2)
+            pl.title('Radius of Neighborhood')
+            pl.ylabel('Manhattan Distance')
+            x = np.linspace(0, self.iteration, self.iteration+1)
+            y = np.power(1.115, -x) * 4
+            pl.plot(x,y)
+            font1 = {'family': 'Times New Roman', 'weight': 'normal', 'size': 18}
+            pl.text(20,3.5,r'$D = 4 \times 1.115^{-t}$', font1)
             pl.plot(self.count,  np.power(1.115, -self.count) * 4, 'go', markersize="12")
 
-        # 绘制学习率图像
-        pl.subplot(2,2,4)
-        pl.title('Learning Rate')
-        pl.xlabel('Iteration')
-        pl.ylabel('Rate')
-        x = np.linspace(0, self.iteration, self.iteration+1)
-        y = np.power(np.e, 0) / (x + 40)
-        pl.plot(x,y)
-        pl.text(20,0.024,'Batch Size=100, D=0', font1)
-        pl.text(20,0.022, r'$R = e^{-D} / (t + 40)$', font1)
-        if file_name!=1:
+            # 绘制学习率图像
+            pl.subplot(2,2,4)
+            pl.title('Learning Rate')
+            pl.xlabel('Iteration')
+            pl.ylabel('Rate')
+            x = np.linspace(0, self.iteration, self.iteration+1)
+            y = np.power(np.e, 0) / (x + 40)
+            pl.plot(x,y)
+            pl.text(20,0.024,'Batch Size=100, D=0', font1)
+            pl.text(20,0.022, r'$R = e^{-D} / (t + 40)$', font1)
+
             pl.plot(self.count, np.power(np.e, 0) / (self.count + 40), 'go', markersize="12")
-        # 保存图片
-        if file_name==1:
-            pl.savefig('./fig4/fig36.png', dpi=1200)
-            pl.show()
-            
-        else:
-            pl.savefig(file_name, dpi=1200)
+            # 保存图片
+            pl.savefig(file_name, dpi=300)
             pl.close()
+        else:
+            pl.figure(figsize=(22, 10))
+            colValue = ['y', 'g', 'b', 'c', 'k', 'm', 'peru', 'darkorchid']
+
+            # 聚类图像
+            pl.subplot(1,2,1)
+            # 普通的样本
+            if len(data) != 0:
+                pl.plot(data[:,0], data[:,1], 'ko', markersize="5")
+
+            # 分类的样本
+            if len(C) != 0:
+                for i in range(len(C)):
+                    coo_X = []  # x坐标列表
+                    coo_Y = []  # y坐标列表
+                    for j in range(len(C[i])):
+                        coo_X.append(C[i][j][0])
+                        coo_Y.append(C[i][j][1])
+                    pl.scatter(coo_X, coo_Y, marker='o', color=colValue[i % len(colValue)], label=i)
+
+                pl.legend(loc='upper right')
+
+            # 神经元
+            pl.plot(W[:,0], W[:,1], "ro", marker='o', markersize="7")
+            for index in range(self.output[0]*self.output[1]):
+                for i in range(self.output[0]*self.output[1]):
+                    dist = self.Manhattan_dist(i, index)
+                    if dist == 1: 
+                        pl.plot(W[[i,index],0], W[[i,index],1], "r")
+            
+            pl.xlabel('X')
+            pl.ylabel('Y')
+            pl.title('SOM')
+            pl.xlim(-5, 25)
+            pl.ylim(-5, 25)
+            ###########################################################################
+            num_tmp = 1000
+            for i in range(len(C)):
+                for j in range(len(C[i])):
+                    num_tmp = min([len(C[i][j]), num_tmp])
+            pl.subplot(3,6,4)
+            pl.title("Cluster 0 (n=50)")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[0,:].A[0], 'ko-')
+            pl.subplot(3,6,5)
+            pl.title("Cluster 1 (n=0)")
+            pl.ylim(-1,25)
+
+            pl.subplot(3,6,6)
+            pl.title("Cluster 2 (n=50)")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[2,:].A[0], 'ko-')
+            pl.subplot(3,6,10)
+            pl.title("Cluster 3 (n=" + str(50-num_tmp) + ")")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[3,:].A[0], 'ko-')
+            pl.subplot(3,6,11)
+            pl.title("Cluster 4 (n=" + str(num_tmp) + ")")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[4,:].A[0], 'ko-')
+            pl.subplot(3,6,12)
+            pl.title("Cluster 5 (n=0)")
+            pl.ylim(-1,25)
+
+            pl.subplot(3,6,16)
+            pl.title("Cluster 6 (n=50)")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[6,:].A[0], 'ko-')
+            pl.subplot(3,6,17)
+            pl.title("Cluster 7 (n=50)")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[7,:].A[0], 'ko-')
+            pl.subplot(3,6,18)
+            pl.title("Cluster 8 (n=50)")
+            pl.ylim(-1,25)
+            pl.plot([1,2],self.W[8,:].A[0], 'ko-')
+            # 保存图片
+            pl.savefig('./fig5/fig36.png', dpi=300)
+            pl.show()
 
 
 if __name__ == '__main__':
 
     # 自己生成数据
+    random.seed(1113)
     n = 50
     p = 2
     if p == 2:
@@ -214,7 +291,7 @@ if __name__ == '__main__':
     dataset_old = dataset.copy()
 
     # SOM
-    som = SOM(dataset, (3, 3), 35, 100)     # X, output, iteration, batch_size
+    som = SOM(dataset, (3, 3), 35, 80)     # X, output, iteration, batch_size
     som.train()
 
     # Reuslt
