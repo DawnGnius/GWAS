@@ -1,0 +1,77 @@
+---
+title: 'Homework2: Dim-Reduction'
+author: "Liu Huihang"
+date: "10/27/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+citation("mclust")
+```
+
+## 1. PAM only
+PAM is included in cluster package.
+
+```{r}
+# Require package
+library(cluster)
+library(mclust)
+
+# input data
+data.snp <- read.table("~/Codes/GWAS/HW2/c1_snps_recd1.txt", header = TRUE)
+
+# Creat a table between the true origins and the clustering result
+data.type <- rep("Asian", 697)
+data.type[data.snp$races %in% c("CEPH - 1",
+                                      "CEPH - 2",
+                                      "Tuscan",
+                                      "Tuscan - Additional")] <- "European"
+data.type[data.snp$races %in% c("Luhya",
+                                      "Luhya - Additional",
+                                      "Yoruba - 1",
+                                      "Yoruba - 2",
+                                      "Yoruba - Additional")] <- "African"
+
+# Clustering by PAM with k = 3
+fit.pam <- pam(data.snp[, -c(1,2)], k = 3, metric = "euclidean")
+cluster.pam <- fit.pam$clustering
+
+# Classification error rate
+error.PAM <- classError(cluster.pam, data.type)$errorRate
+cat("The classification error rate of PAM on original data is: ", error.PAM, "\n")
+
+# table
+table(cluster.pam, data.type)
+```
+
+
+## 2. PAM after PCA
+```{r}
+# Apply PCA
+fit.pca <- prcomp(data.snp[, -c(1, 2)])
+
+# Calculate proportion and cumulative proportion of variance explained by each PC
+variance.table <- data.frame(Var = round(fit.pca$sdev^2),
+                            Prop<- fit.pca$sdev^2/sum(fit.pca$sdev^2)*100,
+                            Cum.Prop<- cumsum(fit.pca$sdev^2/sum(fit.pca$sdev^2)*100))
+variance.table.round <- round(variance.table, digits = 3)
+names(variance.table.round)[c(2,3)] <- c("Prop", "Cum.Prop")
+head(variance.table.round, 10)
+```
+
+```{r}
+num.pc <- c(2, 5, 10)
+for (num in num.pc) {
+  pcs <- fit.pca$x[,1:num]
+  # Clustering by PAM with k = 3
+  fit.pam <- pam(pcs, k = 3, metric = "euclidean")
+  cluster.pam <- fit.pam$clustering
+  
+  # Classification error rate
+  error.PAM <- classError(cluster.pam, data.type)$errorRate
+  cat("\nThe classification error rate of PAM on", num, "pcs is: \t", error.PAM, "\n")
+  # table
+  print(table(cluster.pam, data.type))
+}
+```
