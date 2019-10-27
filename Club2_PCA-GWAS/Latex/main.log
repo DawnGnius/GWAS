@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7200 64-bit) (preloaded format=xelatex 2019.9.29)  27 OCT 2019 19:43
+This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7200 64-bit) (preloaded format=xelatex 2019.9.29)  27 OCT 2019 23:20
 entering extended mode
 **d:/Documents/Codes/GWAS/Club2_PCA-GWAS/Latex/main.tex
 (d:/Documents/Codes/GWAS/Club2_PCA-GWAS/Latex/main.tex
@@ -472,27 +472,45 @@ LaTeX Info: Redefining \nameref on input line 6.
 ("D:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\se-ascii-print.def"
 File: se-ascii-print.def 2016/05/16 v1.11 stringenc: Printable ASCII characters
 
-))
-No file main.bbl.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 15.
-[1
+)
+LaTeX Font Info:    Try loading font information for U+msa on input line 33.
+
+("D:\Program Files\MiKTeX 2.9\tex/latex/amsfonts\umsa.fd"
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 33.
+
+("D:\Program Files\MiKTeX 2.9\tex/latex/amsfonts\umsb.fd"
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) [1
 
 ]
+File: pic/table1.png Graphic file (type bmp)
+<pic/table1.png>
+
+Overfull \hbox (26.97687pt too wide) in paragraph at lines 52--53
+[] 
+ []
+
+[2])
+No file main.bbl.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 15.
+[3]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 15.
  (main.aux)
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 15.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 15.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 424819707D746A9D90406D9286CF44F7.
+(rerunfilecheck)             Checksum: 9765D5E3A1A0B0F18611627D033F62E3.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 15.
  ) 
 Here is how much of TeX's memory you used:
- 12028 strings out of 427669
- 167623 string characters out of 3149215
- 263039 words of memory out of 3000000
- 16000 multiletter control sequences out of 15000+200000
- 4072 words of font info for 24 fonts, out of 3000000 for 9000
+ 12082 strings out of 427669
+ 168266 string characters out of 3149215
+ 267039 words of memory out of 3000000
+ 16029 multiletter control sequences out of 15000+200000
+ 8720 words of font info for 42 fonts, out of 3000000 for 9000
  1348 hyphenation exceptions out of 8191
- 51i,5n,45p,330b,326s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 51i,6n,45p,386b,329s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on main.pdf (1 page).
+Output written on main.pdf (3 pages).

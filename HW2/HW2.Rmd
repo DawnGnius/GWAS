@@ -11,27 +11,37 @@ citation("mclust")
 ```
 
 ## 1. PAM only
-PAM is included in cluster package.
+PAM is included in cluster package. We can directly use **pam** function with $k=3$ to get the clusting result. 
+
+
 
 ```{r}
 # Require package
 library(cluster)
 library(mclust)
+```
 
+In addition, I combine some races to get a simple insight. 
+As we know that the races, Luhya, Luhya - Additional,
+Yoruba - 1, Yoruba - 2, Yoruba - Additional, are African; the races, CEPH - 1, CEPH - 2, Tuscan, Tuscan -
+Additional, are European; and the races, Denver Chinese, Denver Chinese - Additional, Han Chinese - 1, Han
+Chinese - 2, Han Chinese - Additional, Japanese - 1, Japanese - 2, Japanese - Additional, are Asian.
+
+```{r}
 # input data
 data.snp <- read.table("~/Codes/GWAS/HW2/c1_snps_recd1.txt", header = TRUE)
 
-# Creat a table between the true origins and the clustering result
+# Combine some races
 data.type <- rep("Asian", 697)
 data.type[data.snp$races %in% c("CEPH - 1",
-                                      "CEPH - 2",
-                                      "Tuscan",
-                                      "Tuscan - Additional")] <- "European"
+                                "CEPH - 2",
+                                "Tuscan",
+                                "Tuscan - Additional")] <- "European"
 data.type[data.snp$races %in% c("Luhya",
-                                      "Luhya - Additional",
-                                      "Yoruba - 1",
-                                      "Yoruba - 2",
-                                      "Yoruba - Additional")] <- "African"
+                                "Luhya - Additional",
+                                "Yoruba - 1",
+                                "Yoruba - 2",
+                                "Yoruba - Additional")] <- "African"
 
 # Clustering by PAM with k = 3
 fit.pam <- pam(data.snp[, -c(1,2)], k = 3, metric = "euclidean")
@@ -44,9 +54,13 @@ cat("The classification error rate of PAM on original data is: ", error.PAM, "\n
 # table
 table(cluster.pam, data.type)
 ```
-
+It shows that the clustering error rate with PAM only is $2.58\%$. 
+The table shows more details of clustering.
 
 ## 2. PAM after PCA
+We can improve the performance of clustering by PCA. 
+**prcomp** function will return directions, scores and cumulative proportion of variance.
+
 ```{r}
 # Apply PCA
 fit.pca <- prcomp(data.snp[, -c(1, 2)])
@@ -60,8 +74,10 @@ names(variance.table.round)[c(2,3)] <- c("Prop", "Cum.Prop")
 head(variance.table.round, 10)
 ```
 
+We try number of PCs $1, 2, 5, 10, 30, 100$ and get the following results. Actually, I try a lot of numbers and choose those $6$ to be represented.
+
 ```{r}
-num.pc <- c(2, 5, 10)
+num.pc <- c(1, 2, 5, 10, 30, 100)
 for (num in num.pc) {
   pcs <- fit.pca$x[,1:num]
   # Clustering by PAM with k = 3
@@ -75,3 +91,29 @@ for (num in num.pc) {
   print(table(cluster.pam, data.type))
 }
 ```
+
+The error rates shown above are relatively smaller than PAM-only method. 
+More specifically, the result shows that we can reduce $\bf 148\%$ error rate if we cluster with top $5$ PCs , which is a significant improvement. 
+
+If we use more PCs, it'll not increase the performence, on the contrary, it'll become worse, but still be better than PAM-only method.
+I draw the following figure to illustrate it.
+
+```{r}
+num.pc <- 1:200
+errorRate <- NULL
+for (num in num.pc) {
+  pcs <- fit.pca$x[,1:num]
+  # Clustering by PAM with k = 3
+  fit.pam <- pam(pcs, k = 3, metric = "euclidean")
+  cluster.pam <- fit.pam$clustering
+  
+  # Classification error rate
+  error.PAM <- classError(cluster.pam, data.type)$errorRate
+  errorRate <- c(errorRate, error.PAM)
+}
+plot(num.pc, errorRate, "l", lwd=2)
+```
+
+The error rate changes extremely, and it's not monotonous when the number is big. 
+
+So, we should choose a number more cautiously.
