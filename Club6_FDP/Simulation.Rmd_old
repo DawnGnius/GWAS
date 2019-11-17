@@ -1,0 +1,84 @@
+---
+title: "Simulation"
+author: "Liu Huihang"
+date: "11/16/2019"
+output: 
+    pdf_document:
+        latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("MASS")
+library("snowfall")
+```
+
+## Simulation Settings
+
+In the simulation studies, we consider $p = 2000$, $n = 100$, $\sigma = 2$, the number of false null hypotheses $p_1 = 10$, and the nonzero $\beta_i = 1$, unless stated otherwise. 
+We will present six different dependence structures for $\Sigma$ of the test statistics $(Z_1,\dots, Z_p)T \sim N((\mu_1, \dots , \mu_p)^T ,\Sigma)$. 
+$\Sigma$ is the correlation matrix of a random sample of size $n$ of $p$-dimensional vector $\mathbf{X}_i = (X_{i1}, \dots , X_{ip})$, and $\mu_j = \sqrt{n} \beta_j \hat{\sigma}_j / \sigma, j = 1, \dots , p$. 
+The data-generating process vector $X_i$’s are as follows.
+
+\begin{description}
+    \item [Equal correlation] Let $\mathbf{X}^T = (X_{1}, \dots , X_{p})^T \sim N_p(0, \Sigma)$, where $\Sigma$ has diagonal element $1$ and off-diagonal element $1/2$.
+
+    \item [Fan and Song's model] For $\mathbf{X} = (X_{1}, \dots , X_{p})$, let $\{X_k\}^{1900}_{k=1}$ be iid $N(0,1)$ and
+    \begin{equation}
+        X_{k}=\sum_{l=1}^{10} X_{l}(-1)^{l+1} / 5+\sqrt{1-\frac{10}{25}} \epsilon_{k}, k=1901, \ldots, 2000
+    \end{equation}
+    where $\{\epsilon_{k}\}^{2000}_{k=1901}$ are standard normally distributed.
+
+    \item [Independent Cauchy] For $\mathbf{X} = (X_{1}, \dots , X_{p})$, let $\{X_k\}^{2000}_{k=1}$ be iid. Cauchy random variables with location parameter $0$ and scale parameter $1$.
+
+    \item [Three factor model] For $\mathbf{X} = (X_{1}, \dots , X_{p})$, let 
+    \begin{equation}
+        X_{j}=\rho_{j}^{(1)} W^{(1)}+\rho_{j}^{(2)} W^{(2)}+H_{j}
+    \end{equation}
+    where $W^{(1)} \sim N(−2,1)$, $W^{(2)} \sim N(1,1)$, $W^{(3)} \sim N(4,1)$, $\rho^{(1)}_j$, $\rho^{(2)}_j$, $\rho^{(3)}_j$ are iid $U(−1,1)$, and $H_j$ are iid $N(0,1)$.
+
+    \item [Two factor model] For $\mathbf{X} = (X_{1}, \dots , X_{p})$, let
+    \begin{equation}
+        X_{j}=\rho_{j}^{(1)} W^{(1)}+\rho_{j}^{(2)} W^{(2)}+H_{j}
+    \end{equation}
+    where $W^{(1)}$ and $W^{(2)}$ are iid $N(0,1)$, $\rho_j^{(1)}$ and $\rho_j^{(2)}$ are iid $U(−1,1)$, and $H_j$ are iid $N(0,1)$. 
+
+    \item [Nonlinear factor model] For $\mathbf{X} = (X_{1}, \dots , X_{p})$, let
+    \begin{equation}
+        X_{j}=\sin \left(\rho_{j}^{(1)} W^{(1)}\right)+sgn\left(\rho_{j}^{(2)}\right) \exp \left(\left|\rho_{j}^{(2)}\right| W^{(2)}\right)+H_{j}
+    \end{equation}
+    where $W^{(1)}$ and $W^{(2)}$ are iid $N(0,1)$, $\rho_j^{(1)}$ and $\rho_j^{(2)}$ are iid $U(−1,1)$, and $H_j$ are iid $N(0,1)$. 
+\end{description}
+
+```{r}
+# settings
+p <- 100
+n <- 100
+sig <- 2
+p.nonzero <- 10
+beta.nonzero <- 1
+
+# Equal correlation
+beta <- c(rep(beta.nonzero, p.nonzero), rep(0, p-p.nonzero))
+Sigma <- matrix(rep(.5, p*p), p, p); diag(Sigma) <- rep(1, p)
+dat <- MASS::mvrnorm(n, rep(0,p), Sigma)
+
+mu <- unlist(base::lapply(X=1:p, FUN=function(ii) sqrt(n)*beta[ii]*sqrt(var(dat[, ii]))/sig))
+
+# Z <- MASS::mvrnorm(1, mu, Sigma)
+
+# FDP and FDP_lim
+t <- 0.01
+fdp <- function(ii){
+    Z <- MASS::mvrnorm(1, mu, Sigma)
+    pvalue <- unlist(base::lapply(X=1:p, FUN=function(ii) 1-pnorm(abs(Z[ii]))))
+    tmp.pvalue <- pvalue[11:p]
+    sum(which(tmp.pvalue > t)) / sum(which(pvalue > t))
+}
+
+snowfall::sfInit(parallel = TRUE, cpus = 10) # init
+snowfall::sfLibrary(MASS)
+snowfall::sfExport("p", "mu", "Sigma", "t")
+fdp.repeat <- snowfall::sfLapply(1:500, fdp)
+
+```
