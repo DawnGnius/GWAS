@@ -1,0 +1,115 @@
+---
+title: "RealData"
+author: "Liu Huihang"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Code
+```{r, eval=FALSE}
+# # load data
+# normalized all together
+express.CEU1 <- read.csv('./genevar/CEUp_240_gene_profile.txt', sep='\t')
+express.CHB1 <- read.csv('./genevar/CHB_180_gene_profile.txt', sep='\t')
+express.JPT1 <- read.csv('./genevar/JPT_180_gene_profile.txt', sep='\t')
+express.YRI1 <- read.csv('./genevar/YRIp_240_gene_profile.txt', sep='\t')
+
+# normalized independently for each group
+express.CEU2 <- read.csv('./genevar/CEU_parents.csv')
+express.CHB2 <- read.csv('./genevar/CHB.csv')
+express.JPT2 <- read.csv('./genevar/JPT.csv')
+express.YRI2 <- read.csv('./genevar/YRI_parents.csv')
+
+# genotype data
+genotype.CEU <- read.csv('./genevar/CEU.hmap', sep=' ')
+genotype.CHB <- read.csv('./genevar/CHB.hmap', sep=' ')
+genotype.JPT <- read.csv('./genevar/JPT.hmap', sep=' ')
+genotype.YRI <- read.csv('./genevar/YRI.hmap', sep=' ')
+```
+
+
+```{r}
+# # load data
+load('./genevar/dat.RData')
+
+# remove the data I don't use now
+rm(express.CEU1, express.CHB1, express.JPT1, express.YRI1)
+
+# data preparation
+CCT8.CEU2 <- express.CEU2[which(express.CEU2[,1] == "GI_6005726-S"), -1]
+CCT8.CHB2 <- express.CHB2[which(express.CHB2[,1] == "GI_6005726-S"), -1]
+CCT8.JPT2 <- express.JPT2[which(express.JPT2[,1] == "GI_6005726-S"), -1]
+CCT8.YRI2 <- express.YRI2[which(express.YRI2[,1] == "GI_6005726-S"), -1]
+
+
+#############
+
+tmp1 <- colnames(CCT8.CEU2)
+tmp2 <- colnames(genotype.CEU)
+idx.col <- intersect(tmp1, tmp2)
+CCT8.CEU2 <- CCT8.CEU2[, match(idx.col, tmp1)]
+genotype.CEU2 <- genotype.CEU[, match(idx.col, tmp2)]
+
+tmp1 <- colnames(CCT8.CHB2)
+tmp2 <- colnames(genotype.CHB)
+idx.col <- intersect(tmp1, tmp2)
+CCT8.CHB2 <- CCT8.CHB2[, match(idx.col, tmp1)]
+genotype.CHB2 <- genotype.CHB[, match(idx.col, tmp2)]
+
+tmp1 <- colnames(CCT8.JPT2)
+tmp2 <- colnames(genotype.JPT)
+idx.col <- intersect(tmp1, tmp2)
+CCT8.JPT2 <- CCT8.JPT2[, match(idx.col, tmp1)]
+genotype.JPT2 <- genotype.JPT[, match(idx.col, tmp2)]
+
+tmp1 <- colnames(CCT8.YRI2)
+tmp2 <- colnames(genotype.YRI)
+idx.col <- intersect(tmp1, tmp2)
+CCT8.YRI2 <- CCT8.YRI2[, match(idx.col, tmp1)]
+genotype.YRI2 <- genotype.YRI[, match(idx.col, tmp2)]
+
+rm(idx.col, tmp1, tmp2)
+rm(genotype.CEU, genotype.CHB, genotype.JPT, genotype.YRI)
+rm(express.CEU2, express.CHB2, express.JPT2, express.YRI2)
+```
+
+下面对不同地区的 $X$ 的变量取交集, 使他们的维度相同. 
+```{r}
+tmp1 <- rownames(genotype.CEU2)
+tmp2 <- rownames(genotype.CHB2)
+tmp3 <- rownames(genotype.JPT2)
+tmp4 <- rownames(genotype.YRI2)
+idx.row <- Reduce(intersect, list(tmp1, tmp2, tmp3, tmp4))
+genotype.CEU2 <- genotype.CEU2[match(idx.row, tmp1),]
+genotype.CHB2 <- genotype.CHB2[match(idx.row, tmp2),]
+genotype.JPT2 <- genotype.JPT2[match(idx.row, tmp3),]
+genotype.YRI2 <- genotype.YRI2[match(idx.row, tmp4),]
+
+rm(tmp1, tmp2, tmp3, tmp4, idx.row)
+```
+
+下面, 对 X 引入 dummy 变量.
+
+每一个SNP只会有三种可能性，但不同SNP对应的编码可能不一样。
+比如SNP 1对应的是AA、AC、CC，而SNP 2对应的CC、CG、GG。
+如果是这样的话只需要对每个SNP做转换。
+比如对SNP 1你要算出在这个SNP里面A和C在总样本里哪个比较多，多的用0代替，少的用1代替，然后把字母对应的两个数字相加即可
+
+```{r}
+
+genotype.CEU2.dummy <- matrix(rep(0, 2*ncol(genotype.CEU2)*nrow(genotype.CEU2)), nrow=ncol(genotype.CEU2))
+for (ii in 1:nrow(genotype.CEU2)) {
+  a <- genotype.CEU2[ii, ]
+  b <- as.factor(a)
+  c <- summary(b)
+}
+
+genotype.CHB2.dummy <- matrix(rep(0, 2*ncol(genotype.CHB2)*nrow(genotype.CHB2)), nrow=ncol(genotype.CHB2))
+genotype.JPT2.dummy <- matrix(rep(0, 2*ncol(genotype.JPT2)*nrow(genotype.JPT2)), nrow=ncol(genotype.JPT2))
+genotype.YRI2.dummy <- matrix(rep(0, 2*ncol(genotype.YRI2)*nrow(genotype.YRI2)), nrow=ncol(genotype.YRI2))
+```
+我们使用的是 express.CEU2, express.CHB2, express.JPT2, express.YRI2 以及 genotype.CEU2, genotype.CHB2, genotype.JPT2, genotype.YRI2. 他们分别是 Y, X. 

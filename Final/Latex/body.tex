@@ -1,0 +1,110 @@
+\section{Question of Interest}
+
+\begin{enumerate}
+    \renewcommand{\labelenumi}{(\theenumi)}
+    \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
+    \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
+\end{enumerate}
+
+
+\section{Background}
+\label{sec:review}
+
+In the genetical genomics experiments of cDNA array of Saccharomyces cerevisiae ORFs, researchers are interested in exploring the relation between the gene expression levels and expression quantitative trait loci (eQTLs) that contribute to phenotypic variation in gene expression. Gene expression levels are usually treated as quantitative traits in order to identify eQTLs.
+
+To maintain a reasonable power given limited sample size and multiple testing correction in eQTL studies, the smallest model with only additive genetic effect is often used to map eQTL \citep{stranger2007population} 
+\begin{equation*}
+    y = a + b x + \epsilon
+\end{equation*}
+where $y$ indicates a gene expression trait and $x$ indicates the additive genetic effect, which can be coded by the number of minor alleles, and $\epsilon$ is the residual error.
+We can easily extend OLS to model the relation bewteen a gene expression and two genetic effects.
+
+To get a more precise result, more genetic effects, especially when the number of genetic effects is less then the observations, need to be modeled simultaneously. OLS fails in the high dimensional linear regression situation. 
+Under some sparsity conditions, many shinkage estimation methods were proposed, for example \cite{tibshirani1996regression,zou2005regularization,fan2001variable}. 
+The task can be regarded as a multiple linear regression problem, with the gene expression level as responses and the genetic variants as predictors, as following
+\begin{equation}\label{eq:single y}
+    Y = \mathbf{X} \beta + \mathbf{\epsilon}
+\end{equation}
+where $Y\in\mathbb{R}^n$, $\mathbf{X}\in\mathbb{R}^{n\times p}$, $\beta\in\mathbb{R}^p$ and $\textbf{supp}(\beta) = \|\beta\|_0 = s < n \ll p$. 
+
+However, the complex genetic structures call for a joint statistical analysis that can reveal multiple distinct associations between subsets of genes and subsets of genetic variants. 
+Thus, if we treat the genetic variants and gene expressions as the predictors and responses, respectively, in a multivariate regression model, the task can then be carried out by seeking a representation of the coefficient matrix and performing predictor and response selection simultaneously. 
+\begin{equation}\label{eq:multi y}
+    \mathbf{Y} = \mathbf{X} \boldsymbol{\beta} + \boldsymbol{\epsilon}
+\end{equation}
+where $\mathbf{Y}\in\mathbb{R}^{n\times q}$, $\mathbf{X}\in\mathbb{R}^{n\times p}$, $\boldsymbol{\beta}\in\mathbb{R}^{p\times q}$. 
+Some recent methods for eQTL data analysis exploit entrywise or rowwise sparsity of the coefficient matrix to identify individual genetic effects or master regulators \citep{peng2010regularized}. \cite{dai2016knockoff} using group structure of variables deduces a group sparse linear regression and \cite{uematsu2019sofar} suggest the method of sparse orthogonal factor regression via the sparse singular value decomposition with orthogonality constrained optimization. 
+% But those methods not only tend to suffer from low detection power for multiple eQTLs that combine to affect a subset of gene expression traits, but also may offer little information about the functional grouping structure of the genetic variants and gene expressions. 
+
+% Each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants, suggesting that each association between the eQTLs and the genes is sparse in both the input and the output (or in both the responses and the predictors), and the pattern of sparsity should be pathway specific. 
+% Moreover, it is known that the yeast MAPK pathways regulate and interact with each other \cite{gustin1998map}. 
+
+% Thus, if we treat the genetic variants and gene expressions as the predictors and responses, respectively, in a multivariate regression model, the task can then be carried out by seeking a sparse representation of the coefficient matrix and performing predictor and response selection simultaneously. 
+% Specifically, the task can be regarded as a multivariate regression problem with the gene expression levels as responses and the genetic variants as predictors, where both responses and predictors are often of high dimensionality. In genetical genomics experiments, gene expression levels are treated as quantitative traits in order to identify expression quantitative trait loci (eQTLs) that contribute to phenotypic variation in gene expression. 
+
+% By exploiting a sparse SVD structure, we use the SOFAR method, which is particularly appealing for such applications, and may provide new insights into the complexgenetics of gene expression variation. 
+
+
+\section{Data Description}
+
+The data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990. 
+The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a \citep{brem2005landscape}. 
+
+Gene expression measurements were obtained for $6216$ open reading frames in $112$ segregants, and genotypes were identified at $3244$ markers. 
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|p{9cm}|}
+        \hline
+        Title                           &   Genetic complexity in yeast transcripts \\ \hline
+        Organism                        &   Saccharomyces cerevisiae                \\ \hline
+        Experiment type                 &   Expression profiling by array           \\ \hline
+        \multirow{4}{*}{Data Size}      &   Data set consists of a $3244\times112$ \textbf{genotype matrix} with $3244$ genotypes in rows and $112$ samples in columns and a $6216\times112$ \textbf{gene expression matrix} with $6216$ genes in rows and $112$ samples in columns.  \\ \hline
+        \multirow{3}{*}{Description}    &   cDNA array of Saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$\\ 
+        \hline
+    \end{tabular}
+    \caption{Information about Data}
+\end{table}
+
+
+\section{Statistical Analysis Plan}
+
+\begin{enumerate}
+    \renewcommand{\labelenumi}{(\theenumi)}
+    \item \emph{Estimation}.    Using some statistical method for example Group lasso \citep{yuan2006model}, SOFAR \citep{uematsu2019sofar} and SEED \citep{zheng2019scalable} to solve the multivariate regression problem \eqref{eq:multi y} with the gene expression levels as responses and the genetic variants as predictors, where both responses and predictors are often of high dimensionality. 
+    \item \emph{Selection}.     Variable (Factor) selection can be achieved by using some shinkage estimation method, actually some method described in estimation procedure can be used to select variables. We will implement some of them. 
+    \item \emph{FDR Control}.   We plan to use knockoff \citet{barber2015knockoffs,dai2016knockoff,candes2018panning} to control FDR. 
+    \item \emph{Conclusion}.    Finally, we will compare the results from the methods described above and draw some conclusions from the results given by those methods, especially some biologically significant conclusions. 
+\end{enumerate}
+
+Note that extensive genetic and biochemical analysis has revealed that there are a few functionally distinct signaling pathways of genes \citep{brem2005landscape,gustin1998map}, suggesting that the association structure between the eQTLs and the genes is of low rank. 
+
+Thus, we choose these sparse multivariate regression (selection) method to complete the plan because they are suitable for the data and explainable when we get a result and very novel to reach unusual (extraordinary) conclusions. 
+See Section~\ref{sec:review} for detail. 
+
+
+\section{Expected results}
+
+After the analysis, we expect to:
+
+\begin{itemize}
+    \item Get a representation of the coefficient matrix $\beta$ and response selection. And may provide new insights into the complex genetics of gene expression variation. 
+    \item Detect power for multiple eQTLs that combine to affect a subset of gene expression traits, which may offer information about the functional grouping structure of the genetic variants and gene expressions. 
+    \item Get results which may suggest that there are common genetic components shared by the expression traits of the clustered genes and clear reveal strong associations between the upstream and downstream genes on several signaling pathways, which are consistent with the current functional understanding of the MAPK signaling pathways. 
+\end{itemize}
+
+
+
+\section{Plan B}
+
+We may fail in implementing Plan A, because the methods mentioned are novel and the implementation of the plan is challenging. 
+
+When our Plan A cannot be implemented, we will 
+\begin{itemize}
+    \item use some traditional high dimensional linear regression method such as LASSO \citep{tibshirani1996regression}, Elastic-Net \citep{zou2005regularization} and SCAD \citep{fan2001variable} to analysis a single gene expression level by eQTLs, namely expression \eqref{eq:single y};
+    \item implement some low dimensional method or some old fashioned method such as OLS and BP network to simplified yeast data given by \emph{geneNetBP} package \cite{moharil2016package} in \textbf{R}. 
+    The data set \emph{yeast} is a data frame of $112$ observations of 50 variables: genotype data (genotype states at $12$ SNP markers) and phenotype data (normalized and discretized expression values of $38$ genes). 
+    Both genotypes and phenotypes are of class factor.
+\end{itemize}
+
+We will not fail anymore. 

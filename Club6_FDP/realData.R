@@ -1,15 +1,18 @@
-# load data
-CHB <- read.csv('./Club6_FDP/genevar/CHB.csv')
-CEU <- read.csv('./Club6_FDP/genevar/CEU_parents.csv')
-JPT <- read.csv('./Club6_FDP/genevar/JPT.csv')
-YRI <- read.csv('./Club6_FDP/genevar/YRI_parents.csv')
-# microarray <- read.csv('./Club6_FDP/genevar/illumina_Human_WG-6_array_content.csv')
-express.CHB <- read.csv('./Club6_FDP/genevar/CHB_180_gene_profile.txt', sep='\t')
-express.CEU <- read.csv('./Club6_FDP/genevar/CEUp_240_gene_profile.txt', sep='\t')
-express.JPT <- read.csv('./Club6_FDP/genevar/JPT_180_gene_profile.txt', sep='\t')
-express.YRI <- read.csv('./Club6_FDP/genevar/YRIp_240_gene_profile.txt', sep='\t')
+# # load data
+# normalized all together
+express.CEU1 <- read.csv('./genevar/CEUp_240_gene_profile.txt', sep='\t')
+express.CHB1 <- read.csv('./genevar/CHB_180_gene_profile.txt', sep='\t')
+express.JPT1 <- read.csv('./genevar/JPT_180_gene_profile.txt', sep='\t')
+express.YRI1 <- read.csv('./genevar/YRIp_240_gene_profile.txt', sep='\t')
 
-# data preparation
-CHB <- CHB[, -1]; CEU <- CEU[, -1]; JPT <- JPT[, -1]; YRI <- YRI[, -1]
-Asian <- cbind(CHB, JPT)
-express.Asian <- rbind(express.CHB, express.JPT)
+# normalized independently for each group
+express.CEU2 <- read.csv('./genevar/CEU_parents.csv')
+express.CHB2 <- read.csv('./genevar/CHB.csv')
+express.JPT2 <- read.csv('./genevar/JPT.csv')
+express.YRI2 <- read.csv('./genevar/YRI_parents.csv')
+
+# genotype data
+genotype.CEU <- read.csv('./genevar/CEU.hmap', sep=' ')
+genotype.CHB <- read.csv('./genevar/CHB.hmap', sep=' ')
+genotype.JPT <- read.csv('./genevar/JPT.hmap', sep=' ')
+genotype.YRI <- read.csv('./genevar/YRI.hmap', sep=' ')
