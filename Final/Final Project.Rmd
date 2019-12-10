@@ -9,6 +9,24 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+## Definition
+
+### eQTL
+
+Genetical genomics experiments have now been routinely conducted to measure both the genetic markers and gene expression data on the same subjects. The gene expression levels are often treated as quantitative traits and are subject to standard genetic analysis in order to identify the gene expression quantitative loci (eQTL). 
+
+
+### Yeast
+
+酵母菌一共有 16 条染色体, 全部记录在数据中. 
+
+### Genetic Markers. 
+A genotype indicates the genetic state of the DNA in an organism. 
+It is a theoretical construct describing a genetic situation that explains the observed properties (phenotype, see below) of a strain. 
+
+
+
 ## Data Preparation
 
 The **yeast** dataset is a subset of the widely studied yeast expression dataset comprising of $112$ *F1* segregants from a cross between *BY4716* and *RM11-1a* strains of Saccharomyces Cerevisiae.
@@ -16,11 +34,9 @@ The **yeast** dataset is a subset of the widely studied yeast expression dataset
 The original dataset consists of expression values reported as $log_2(\text{sample} / \text{BY reference})$ for $7085$ genes. 
 
 
-### Loading Data
-
 The data can be accessed in Gene Expression Omnibus (GEO) by accession number (GSE1990). 
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE, include=FALSE}
 # Original data
 # https://warwick.ac.uk/fac/sci/moac/people/students/peter_cock/r/geo/
 # dat <- read.csv("GSE1990_series_matrix.txt", header=TRUE, sep = "\t")
@@ -57,7 +73,7 @@ Thus the final dataset is a data frame of $112$ observations (genotype) of $12$ 
 The gene expression values are discretized around the median and have two states, $1$ (above or equal to median) and $-1$ (below median). 
 There are two genotype states: $1$ or $2$. 
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE, include=FALSE}
 # Data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1990
 # geneNetBP: https://cran.r-project.org/web/packages/geneNetBP/geneNetBP.pdf
 # trigger: https://bioconductor.org/packages/release/bioc/vignettes/trigger/inst/doc/trigger.pdf
@@ -71,7 +87,43 @@ head(yeast)
 # fit.dbn(yeast[,1:12],yeast[,13:50])
 ```
 
-In **trigger**, *marker*: A $3244$ × $112$ genotype matrix;  *exp*: A $6216$ × $112$ gene expression matrix
+In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
+
+
+
+```{r, message=FALSE, eval=FALSE, include=FALSE}
+rm(list=ls())
+library(trigger)
+
+data(yeast)
+
+# head(yeast$marker)
+# 
+# head(yeast$exp)
+
+#reduce data size for vignette run time
+set.seed(123)
+#select subset of 400 traits
+gidx = sort(sample(1:6216, size = 400))
+yeast$exp = yeast$exp[gidx,]
+yeast$exp.pos = yeast$exp.pos[gidx,]
+#select subset of markers
+midx = sort(sample(1:3244, size = 500))
+yeast$marker = yeast$marker[midx,]
+yeast$marker.pos = yeast$marker.pos[midx,]
+
+attach(yeast)
+dim(exp)
+
+
+trig.obj <- trigger.build(marker=marker, exp=exp, marker.pos=marker.pos, exp.pos=exp.pos)
+trig.obj
+detach(yeast)
+
+
+trig.obj = trigger.link(trig.obj, norm = TRUE)
+plot(trig.obj, type = "link", cutoff = 1e-5)
+```
 
 ```{r, message=FALSE}
 rm(list=ls())
@@ -79,8 +131,5 @@ library(trigger)
 
 data(yeast)
 
-head(yeast$marker)
-
-head(yeast$exp)
 
 ```
