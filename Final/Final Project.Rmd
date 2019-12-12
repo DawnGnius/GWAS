@@ -128,8 +128,17 @@ plot(trig.obj, type = "link", cutoff = 1e-5)
 ```{r, message=FALSE}
 rm(list=ls())
 library(trigger)
+library(stats)
 
 data(yeast)
 
+marker <- yeast$marker
+res <- stats::kmeans(marker, centers=585)
+idxs_ii <- list()
+for (ii in 1:585){
+  idxs_ii <- c(idxs_ii, list(marker[which(res$cluster == ii),]))
+}
 
+a <- idxs_ii[[1]]
+b <- a[1,] - a
 ```
