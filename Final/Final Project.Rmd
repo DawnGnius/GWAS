@@ -139,6 +139,36 @@ for (ii in 1:585){
   idxs_ii <- c(idxs_ii, list(marker[which(res$cluster == ii),]))
 }
 
-a <- idxs_ii[[1]]
-b <- a[1,] - a
+
+a <- idxs_ii[[3]]
+b <- matrix(rep(1, dim(a)[1]), ncol=1) %*% a[1,] - a
+b
+```
+
+results from kmeans do not satisfy the constrain: markers within the same group diff at most one sample.
+
+
+
+### Block env in the desktop
+
+Next, I'll check how many groups are there.
+Distance clustering, d <= 1
+```{r}
+# dist function does not work, I don't know why.
+# I wana cluster markers with maximum within group distance.
+a <- dist(marker)
+b <- as.matrix(a)
+clust <- list(c(0))
+for (ii in 1:dim(b)[1]){        # loop for rows
+    if (sapply(clust, function(y) ii %in% y)){             # if ii row is in the list
+        next
+    }
+    idx.cols <- numeric(0)
+    for (jj in 1:dim(b)[2]) {   # loop for cols
+        if (b[ii,jj] == 0){
+            idx.cols <- c(idx.cols, jj)
+        }
+    }
+    clust <- c(clust, list(c(ii, idx.cols)))
+}
 ```
