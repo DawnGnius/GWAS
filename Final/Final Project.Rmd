@@ -133,42 +133,57 @@ library(stats)
 data(yeast)
 
 marker <- yeast$marker
-res <- stats::kmeans(marker, centers=585)
-idxs_ii <- list()
-for (ii in 1:585){
-  idxs_ii <- c(idxs_ii, list(marker[which(res$cluster == ii),]))
-}
 
-
-a <- idxs_ii[[3]]
-b <- matrix(rep(1, dim(a)[1]), ncol=1) %*% a[1,] - a
-b
 ```
 
-results from kmeans do not satisfy the constrain: markers within the same group diff at most one sample.
-
-
-
-### Block env in the desktop
-
-Next, I'll check how many groups are there.
 Distance clustering, d <= 1
+
 ```{r}
-# dist function does not work, I don't know why.
-# I wana cluster markers with maximum within group distance.
-a <- dist(marker)
-b <- as.matrix(a)
-clust <- list(c(0))
-for (ii in 1:dim(b)[1]){        # loop for rows
-    if (sapply(clust, function(y) ii %in% y)){             # if ii row is in the list
-        next
+# hclust
+out.dist <- dist(marker, method="manhattan")
+hc1.complete <- hclust(dist(marker, method="manhattan"), method="complete") # complete method using the max distance within a group
+out.id <- cutree(hc1.complete, h=1)                                         # h is the maximum distance to be cut
+print(max(out.id))
+for (ii in 1:max(out.id)) {
+  tmp <- marker[which(out.id==ii),]                                         
+  if (is.matrix(tmp)) {
+    d <- matrix(rep(1,dim(tmp)[1]),ncol=1) %*% tmp[1,] - tmp
+    d.col <- colSums(abs(d))
+    if (length(which(d.col != 0)) > 1){
+      cat("some thing wrong at ", ii, "ther are", length(which(d.col != 0)), "diffs \n")
     }
-    idx.cols <- numeric(0)
-    for (jj in 1:dim(b)[2]) {   # loop for cols
-        if (b[ii,jj] == 0){
-            idx.cols <- c(idx.cols, jj)
-        }
-    }
-    clust <- c(clust, list(c(ii, idx.cols)))
+  }
 }
+
 ```
+
+讲每组的众数取出来作为该组的代表. 生成新的 marker: X.
+```{r}
+count <- numeric(max(out.id))
+for (ii in 1:max(out.id)) {
+  tmp <- marker[which(out.id==ii),]
+  if (!is.matrix(tmp)) {
+    count[ii] <- which(out.id == ii)
+    next
+  }
+  tmp.unique <- unique(tmp)
+  if (dim(tmp.unique)[1] == 1){
+    count[ii] <- which(out.id == ii)[1]
+    next
+  }
+  tmp.count <- numeric(2)
+  tmp.rec <- numeric(length(which(out.id == ii)))
+  for (jj in 1:length(which(out.id == ii))) {
+    want <- marker[which(out.id == ii)[jj],]
+    tmp.idx <- ifelse(sum(abs(want - tmp.unique[2,])), 1, 2) 
+    tmp.count[tmp.idx] <- tmp.count[tmp.idx] + 1
+    tmp.rec[jj] <- tmp.idx
+  }
+  tmp.mostfreq <- which.max(table(tmp.rec))[1]
+  count[ii] <- which(out.id == ii)[which(tmp.rec == tmp.mostfreq)[1]]
+}
+
+X <- marker[count,]
+```
+
+
