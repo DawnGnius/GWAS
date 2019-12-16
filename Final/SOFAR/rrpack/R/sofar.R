@@ -448,11 +448,13 @@ cv.sofar <- function(Y,
                      nrank = 1,
                      su = NULL,
                      sv = NULL,
+                     ic.type = c("GIC", "BIC", "AIC", "GCV"),
                      nfold = 5,
                      norder = NULL,
                      modstr = list(),
                      control = list(),
-                     screening = FALSE)
+                     screening = FALSE,
+                     DEBUG = FALSE)
 {
   Call <- match.call()
 
@@ -524,8 +526,7 @@ cv.sofar <- function(Y,
   ini <- NULL
   if (is.null(WA) || is.null(WB) || is.null(Wd)) {
     if (is.null(ini))
-      ini <-
-        rrr.fit(Y.reduced, X.reduced, nrank, coefSVD = TRUE)
+      ini <- rrr.fit(Y.reduced, X.reduced, nrank, coefSVD = TRUE)
 
     WA <- switch(
       methodA,
@@ -533,13 +534,13 @@ cv.sofar <- function(Y,
       adlasso = (ini$coefSVD$u %*%
                    diag(ini$coefSVD$d/sqrt(sv),
                         nrow = length(ini$coefSVD$d))
-      ) ^ (-wgamma),
+                ) ^ (-wgamma),
       glasso = rep(1., p.reduced),
       adglasso = sqrt(rowSums((
         ini$coefSVD$u %*%
           diag(ini$coefSVD$d/sqrt(sv),
                nrow = length(ini$coefSVD$d))
-      ) ^ 2)) ^ (-wgamma)
+                              ) ^ 2)) ^ (-wgamma)
     )
 
     WB <- switch(
@@ -548,20 +549,18 @@ cv.sofar <- function(Y,
       adlasso = (ini$coefSVD$v %*%
                    diag(ini$coefSVD$d/sqrt(su),
                         nrow = length(ini$coefSVD$d))
-      ) ^ (-wgamma),
+                ) ^ (-wgamma),
       glasso = rep(1., q.reduced),
       adglasso = sqrt(rowSums((
         ini$coefSVD$v %*%
           diag(ini$coefSVD$d/sqrt(su),
                nrow = length(ini$coefSVD$d))
-      ) ^ 2)) ^ (-wgamma)
+                              ) ^ 2)) ^ (-wgamma)
     )
 
-    if (substr(methodA, 1, 2) == "ad" ||
-        substr(methodB, 1, 2) == "ad") {
+    if (substr(methodA, 1, 2) == "ad" || substr(methodB, 1, 2) == "ad") {
       if (is.null(ini))
-        ini <-
-          rrr.fit(Y.reduced, X.reduced, nrank, coefSVD = TRUE)
+        ini <- rrr.fit(Y.reduced, X.reduced, nrank, coefSVD = TRUE)
       Wd <- (ini$coefSVD$d/sqrt(su)/sqrt(sv)) ^ (-wgamma)
     } else {
       Wd <- rep(1., nrank)
@@ -576,12 +575,7 @@ cv.sofar <- function(Y,
   U <- t(sqrt(su)*t(ini$coefSVD$u))
   V <- t(sqrt(sv)*t(ini$coefSVD$v))
   D <- ini$coefSVD$d/sqrt(su)/sqrt(sv)
-  init <-
-    list(
-      U = U,
-      V = V,
-      D = D
-    )
+  init <- list(U = U, V = V, D = D)
   ## } else {
   ##  U <- init$U
   ##  V <- init$V
@@ -613,6 +607,11 @@ cv.sofar <- function(Y,
     lamA.max <- lammax$lamA.max
     lamB.max <- lammax$lamB.max
     lamD.max <- lammax$lamD.max
+
+    if (DEBUG == TRUE){
+      print(lamA.max)
+    }
+
     if (penA) {
       lamA <- exp(seq(
         log(lamA.max * lam.min.factor),
@@ -739,7 +738,8 @@ sofar.modstr <- function(mu = 1,
                          WA = NULL,
                          WB = NULL,
                          Wd = NULL,
-                         wgamma = 2) {
+                         wgamma = 2) 
+{
   list(
     mu = mu,
     mugamma = mugamma,
@@ -873,7 +873,8 @@ sofar.procrustes <- function(XY,
                              rho2,
                              U = NULL,
                              identity = FALSE,
-                             control = list(maxit = 50L, epsilon = 1e-3)) {
+                             control = list(maxit = 50L, epsilon = 1e-3)) 
+{
   control <- do.call("sofar.control", control)
   p <- ncol(XX)
   converged <- FALSE
@@ -938,7 +939,8 @@ sofar.fit <- function(Y,
                       sv = NULL,
                       modstr = list(),
                       init = list(U = NULL, V = NULL, D = NULL),
-                      control = list()) {
+                      control = list()) 
+{
   n <- nrow(Y)
   p <- ncol(X)
   q <- ncol(Y)
@@ -979,8 +981,7 @@ sofar.fit <- function(Y,
   Wd <- modstr$Wd
   wgamma <- modstr$wgamma
   ## control
-  lamA <-
-    control$lamA
+  lamA <- control$lamA
   lamB <- control$lamB
   lamD <- control$lamD
 
@@ -1156,10 +1157,8 @@ sofar.fit <- function(Y,
     }
 
 
-    Xd <-
-      crossprod(Xd1) + mu * (crossprod(Xd2) + crossprod(Xd3))
-    Yd <-
-      crossprod(Xd1, Yvec) + mu * (t(Xd2) %*% as.vector(t(A - GA)) +
+    Xd <- crossprod(Xd1) + mu * (crossprod(Xd2) + crossprod(Xd3))
+    Yd <- crossprod(Xd1, Yvec) + mu * (t(Xd2) %*% as.vector(t(A - GA)) +
                                      t(Xd3) %*% as.vector(t(B - GB)))
     if (lamD == 0) {
       D <- solve(Xd, Yd)
@@ -1308,7 +1307,7 @@ sofar.fit <- function(Y,
 }
 
 
-
+# obtain the max lambda A, B, D
 sofar.lammax <- function(Y,
                          X,
                          U = NULL,
@@ -1332,7 +1331,8 @@ sofar.lammax <- function(Y,
                          WA = NULL,
                          WB = NULL,
                          Wd = NULL,
-                         wgamma = 2)
+                         wgamma = 2,
+                         DEBUG = FALSE)
 {
   tol <- 1e-2
   lamA = 0
@@ -1567,6 +1567,10 @@ sofar.lammax <- function(Y,
         sqrt(sum((A - A0) ^ 2) + sum((B - B0) ^ 2) + sum((O - O0) ^ 2))
   }
 
+  if (DEBUG == TRUE){
+    print(lamA.max)
+  }
+
   list(lamA.max = lamA.max,
        lamB.max = lamB.max,
        lamD.max = lamD.max)
@@ -1589,7 +1593,8 @@ sofar.path.reduced <- function(Y,
                                ic = c("GIC", "BIC", "AIC", "GCV"),
                                modstr = list(),
                                init = list(U = NULL, V = NULL, D = NULL),
-                               control = list()) {
+                               control = list())
+{
   p <- ncol(X)
   q <- ncol(Y)
   n <- nrow(Y)
@@ -1803,6 +1808,7 @@ sofar.cv <- function(Y,
                      lamD = 1,
                      nfold = 5,
                      norder = NULL,
+                     ic = c("GIC", "BIC", "AIC", "GCV"),
                      #fold.drop = 0,
                      modstr = list(),
                      init = list(U = NULL, V = NULL, D = NULL),
@@ -1925,7 +1931,8 @@ sofar.cv <- function(Y,
       lamA = lamA,
       lamB = lamB,
       lamD = lamD,
-      ic = "GIC",
+      # ic = "GIC",
+      ic = ic,
       modstr = modstr,
       control = control,
       init = init
@@ -1961,7 +1968,8 @@ sofar.cv <- function(Y,
     XY = XY,
     Yvec = Yvec,
     eigenXX = eigenXX,
-    ic = "GIC",
+    # ic = "GIC",
+    ic = ic,
     nrank = nrank,
     su = su,
     sv = sv,

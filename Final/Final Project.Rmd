@@ -203,8 +203,32 @@ sis1 <- t(X) %*% Y[,1]
 ### SOFAR
 ```{r, message=FALSE}
 library(rrpack)
+source('./SOFAR/rrpack/R/sofar.R')
+source('./SOFAR/rrpack/R/RcppExports.R')
+source('./SOFAR/rrpack/R/penreg.R')
 
-res.sofar <- cv.sofar(Y, X, nrank=3, control=list(lam.min.factor=1e-5, lam.max.factor=1e-1, nlam=50, methodA="glasso", methodB="glasso"))
+res.sofar <- cv.sofar(Y, X, nrank=3, ic.type="GCV", control=list(lam.min.factor=5e-7, lam.max.factor=1e-4, nlam=100, methodA="lasso", methodB="lasso"), DEBUG=TRUE)
 # summary(res.sofar)
+# note: lam.min.factor and lam.max.factor are lower and upper factors multiplied by lam.max=28176.lam.max is a large number. So lam.min.factor should be # cv.sofar use GIC rather than CV
 nonzero.u <- which(res.sofar$U != 0)
+
+U1 <- rowSums(res.sofar$U)
+length(which(U1 != 0))
+
+which(res.sofar$U == 0)
+
+heatmap(Y)
+heatmap(X%*%res.sofar$U%*%diag(res.sofar$D)%*%t(res.sofar$V))
+```
+
+```{r}
+library(rrpack)
+source('./SOFAR/rrpack/R/sofar.R')
+source('./SOFAR/rrpack/R/RcppExports.R')
+source('./SOFAR/rrpack/R/penreg.R')
+
+res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.0155, lamB=0.02, lamD=0.1))
+
+heatmap(Y, Colv = NA)
+heatmap(X%*%res.sofar$U%*%diag(res.sofar$D)%*%t(res.sofar$V), Colv = NA)
 ```

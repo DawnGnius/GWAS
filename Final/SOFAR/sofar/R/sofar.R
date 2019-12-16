@@ -800,7 +800,7 @@ sofar.cv <- function(Y, X,
                          modstr = list(),
                          init = list(U = NULL, V = NULL, D = NULL),
                          control = list()
-) {
+){
   
   p <- ncol(X)
   q <- ncol(Y)
