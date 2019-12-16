@@ -1,0 +1,17 @@
+Package: sofar
+Title: Sparse Orthogonal Factor Regression
+Version: 0.1-5
+Date: 2017-04-01
+Authors@R: c(person(given = "Kun", family = "Chen", role = c("aut", "cre"),
+	            email = "kun.chen@uconn.edu"))
+Author: Kun Chen [aut, cre], Jun Yan [aut]
+Maintainer: Kun Chen <kun.chen@uconn.edu>
+Description: Fitting sparse orthogonal factor regression (sofar).
+Depends: R (>= 3.3.2)
+Imports: MASS, Rcpp (>= 0.12.0), lassoshooting, glmnet
+LinkingTo: Rcpp, RcppArmadillo
+License: GPL (>= 3.0)
+LazyData: true
+RoxygenNote: 5.0.1
+NeedsCompilation: yes
+Packaged: 2017-04-07 01:31:27 UTC; kuc13001

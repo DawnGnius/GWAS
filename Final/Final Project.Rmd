@@ -169,7 +169,7 @@ MAPK.pathway.name <- c('MATALPHA1', 'MATALPHA2', 'STE2', 'STE3', 'GPA1', 'STE4',
 # CHANGE: WSC1->WSC4; FKS2->FKS3
 
 idx.exp <- sapply(MAPK.pathway.name, function(x) which(rownames(exp) == x))
-Y <- exp[idx.exp,]
+Y <- t(exp[idx.exp,])
 
 
 if (!DEBUG){
@@ -180,12 +180,31 @@ if (!DEBUG){
 }
 ```
 
-最后, 我们得到了处理过的数据 $X \in \mathbb{R}^{112\times 949}$, $Y \in \mathbb{R}^{112\times 53}$. 
+Finally, we obtain the processed data:  $X \in \mathbb{R}^{112\times 949}$, $Y \in \mathbb{R}^{112\times 53}$. 
 
 
 
 ## Statistical Analysis
 
-使用统计方法进行分析
+Using some statistical methods to analysis the data. 
 
-重复一下别人的实验. 
+Repeat the simulation study of SOFAR. 
+
+### Simple data analysis:
+
+1. Estimate the covariance matrix of X
+
+2. The correlation between X and Y
+
+```{r}
+sis1 <- t(X) %*% Y[,1]
+```
+
+### SOFAR
+```{r, message=FALSE}
+library(rrpack)
+
+res.sofar <- cv.sofar(Y, X, nrank=3, control=list(lam.min.factor=1e-5, lam.max.factor=1e-1, nlam=50, methodA="glasso", methodB="glasso"))
+# summary(res.sofar)
+nonzero.u <- which(res.sofar$U != 0)
+```
