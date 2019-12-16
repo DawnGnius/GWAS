@@ -1,0 +1,139 @@
+---
+title: "Homework 3"
+author: "Liu Huihang"
+date: "12/15/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Variable Selection
+
+### Data Preparation
+```{r}
+test <- read.csv('test.txt', header = TRUE, sep=" ")
+train <- read.csv('training.txt', header=TRUE, sep=" ")
+
+Y.test <- test[, 1]
+X.test <- as.matrix(test[,-1])
+Y.train <- train[, 1]
+X.train <- as.matrix(train[,-1])
+```
+
+### Linear Model
+```{r}
+fit.lm <- lm(paste0("Y~",paste("X",1:20,sep="",collapse="+")), data=train)
+summary(fit.lm)
+```
+We can obtain the information of residuals and the estimators of coefficients with significance levels.
+It shows that X1, X2, X4, X11, X12, X14 are significant. 
+Other variables are close to zero but not equal to zero. 
+
+### Variable Selection by Lasso, SCAD and MCP
+
+I use package *glmnet* and *ncvreg* to apply Lasso, SCAD and MCP. They are very easy to use and return friendly results.
+
+```{r, message=FALSE}
+# Lasso
+library(glmnet)
+fit.lasso.cv <- cv.glmnet(X.train, Y.train)
+fit.lasso <- glmnet(X.train,Y.train, lambda=fit.lasso.cv$lambda.min)
+res.lasso <- fit.lasso$beta[which(fit.lasso$beta != 0)]
+names(res.lasso) <- colnames(X.train)[which(fit.lasso$beta != 0)]
+print(res.lasso)
+
+# SCAD
+library(ncvreg)
+fit.scad.cv <- cv.ncvreg(X.train, Y.train, family="gaussian", penalty="SCAD")
+fit.scad <- ncvreg(X.train, Y.train, family="gaussian", penalty="SCAD", lambda=fit.scad.cv$lambda.min)
+res.scad <- fit.scad$beta[which(fit.scad$beta[2:21] != 0)+1]
+names(res.scad) <- colnames(X.train)[which(fit.scad$beta[2:21] != 0)]
+print(res.scad)
+
+# MCP
+fit.mcp.cv <- cv.ncvreg(X.train, Y.train, family="gaussian", penalty="MCP")
+fit.mcp <- ncvreg(X.train, Y.train, family="gaussian", penalty="MCP", lambda=fit.mcp.cv$lambda.min)
+res.mcp <- fit.mcp$beta[which(fit.mcp$beta[2:21] != 0)+1]
+names(res.mcp) <- colnames(X.train)[which(fit.mcp$beta[2:21] != 0)]
+print(res.mcp)
+```
+
+I use cross validation to choose turning parameters. The None-Zero coefficients are printed above. 
+We can obtain they small model from the non-zero coefficients. 
+
+MCP gives the most sparse model, and lasso returns the most number of non-zero coefficients. 
+
+### Analysis Prediction Errors
+```{r}
+Y.hat.lasso <- predict.glmnet(fit.lasso, X.test)
+Y.hat.scad <- predict(fit.scad, X.test)
+Y.hat.mcp <- predict(fit.mcp, X.test)
+
+err <- c(lasso=sum((Y.hat.lasso-Y.test)^2) / 100, 
+         scad=sum((Y.hat.scad-Y.test)^2) / 100, 
+         mcp=sum((Y.hat.mcp-Y.test)^2) / 100)
+# print("Prediction Errors: ")
+print(err)
+```
+
+### Summary
+
+I apply Lasso, SCAD and MCP to select variables. 
+
+#### Lasso 
+
+Lasso consider the following optimal problem.
+\begin{equation}
+  \arg\min \| y - X\beta  \|^2_2 \quad \text{subject to } |\beta| \le t
+\end{equation}
+where $t$ is a tuning parameter.
+
+
+
+Both SCAD and MCP consider the objective function
+\begin{equation}
+  \frac{1}{2n}\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|^{2}+ \sum_{j=1}^{d} P_{j}\left(\beta_{j} | \lambda, \gamma \right).
+\end{equation}
+where $P(\beta|\lambda, \gamma)$ is a folded concave penalty.
+
+
+#### SCAD
+
+
+The smoothly clipped absolute deviations (SCAD) penalty is defined as
+\begin{equation}
+  P(x | \lambda, \gamma)=\left\{\begin{array}{ll}{\lambda|x|} & {\text { if }|x| \leq \lambda} \\ {\frac{2 \gamma \lambda|x|-x^{2}-\lambda^{2}}{2(\gamma-1)}} & {\text { if } \lambda<|x|<\gamma \lambda} \\ {\frac{\lambda^{2}(\gamma+1)}{2}} & {\text { if }|x| \geq \gamma \lambda}\end{array}\right.
+\end{equation}
+or the continuous differentiable penalty function 
+defined by 
+\begin{equation}
+    P(x | \lambda, \gamma)^{\prime}(\theta)=\lambda\left\{I(\theta \leq \lambda)+\frac{(a \lambda-\theta)_{+}}{(a-1) \lambda} I(\theta>\lambda)\right\} 
+\end{equation}
+for some $a>2$ and $\theta>0$.
+
+#### MCP
+
+The idea behind the minimax concave penalty (MCP) is very similar with SCAD:
+\begin{equation}
+  P_{\gamma}(x ; \lambda)
+  =
+  \left\{\begin{array}{ll}{\lambda|x|-\frac{x^{2}}{2 \gamma},} & {\text { if }|x| \leq \gamma \lambda} \\ {\frac{1}{2} \gamma \lambda^{2},} & {\text { if }|x|>\gamma \lambda}\end{array}\right.
+\end{equation}
+for $\gamma > 1$. 
+
+Its derivative is
+\begin{equation}
+  P_{\gamma}^{\prime} (x ; \lambda)=\left\{\begin{array}{ll}{\left(\lambda-\frac{|x|}{\gamma}\right) \operatorname{sign}(x),} & {\text { if }|x| \leq \gamma \lambda} 
+  \\ 
+  {0,} & {\text { if }|x|>\gamma \lambda}\end{array}\right.
+\end{equation}
+
+The primary way in which SCAD, and MCP differ from the lasso is that they allow the estimated coefficients to reach large values more quickly than the lasso. 
+
+In other words, SCAD and MCP apply less shrinkage to the nonzero coefficients to achieve bias reduction. 
+
+
+From the result above, we can find that SCAD and MCP have lower prediction errors than Lasso. 
+Although, all of these three method give sapse estimations. 

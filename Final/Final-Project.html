@@ -369,8 +369,8 @@ summary {
 </div>
 
 
-<div id="definition" class="section level2">
-<h2>Definition</h2>
+<div id="introduction-definition" class="section level2">
+<h2>Introduction &amp; Definition</h2>
 <div id="eqtl" class="section level3">
 <h3>eQTL</h3>
 <p>Genetical genomics experiments have now been routinely conducted to measure both the genetic markers and gene expression data on the same subjects. The gene expression levels are often treated as quantitative traits and are subject to standard genetic analysis in order to identify the gene expression quantitative loci (eQTL).</p>
@@ -395,11 +395,90 @@ summary {
 <p>In <strong>SOFAR</strong>, the data is finally reduced to the size of <span class="math inline">\(n=112, p=605, q=54\)</span>.</p>
 <p>In <strong>geneNetBP</strong>, <span class="math inline">\(n=112, p=12, q=38\)</span>. Thus the final dataset is a data frame of <span class="math inline">\(112\)</span> observations (genotype) of <span class="math inline">\(12\)</span> variables (SNP markers) and normalized gene expression of <span class="math inline">\(38\)</span> variables (genes). The gene expression values are discretized around the median and have two states, <span class="math inline">\(1\)</span> (above or equal to median) and <span class="math inline">\(-1\)</span> (below median). There are two genotype states: <span class="math inline">\(1\)</span> or <span class="math inline">\(2\)</span>.</p>
 <p>In <strong>trigger</strong>, <em>marker</em>: A <span class="math inline">\(3244\)</span> × <span class="math inline">\(112\)</span> genotype matrix; <em>exp</em>: A <span class="math inline">\(6216\)</span> × <span class="math inline">\(112\)</span> gene expression matrix</p>
+<p>接下来使用 trigger 数据, 进行预处理. 降低 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 的维度.</p>
 <pre class="r"><code>rm(list=ls())
-library(trigger)
+DEBUG &lt;- FALSE
 
-data(yeast)</code></pre>
+# load data from trigger package or tmp.RData
+if (FALSE){
+  library(trigger)
+  data(yeast)
+} else{
+  load(&#39;tmp.RData&#39;)
+}
+
+library(stats)
+
+marker &lt;- yeast$marker
+exp &lt;- yeast$exp</code></pre>
+<p>Distance clustering, d &lt;= 1</p>
+<pre class="r"><code># hclust
+out.dist &lt;- dist(marker, method=&quot;manhattan&quot;)
+hc1.complete &lt;- hclust(dist(marker, method=&quot;manhattan&quot;), method=&quot;complete&quot;) # complete method using the max distance within a group
+out.id &lt;- cutree(hc1.complete, h=1)                                         # h is the maximum distance to be cut
+if (DEBUG) print(max(out.id))
+if (DEBUG){
+  for (ii in 1:max(out.id)) {
+    tmp &lt;- marker[which(out.id==ii),]                                         
+    if (is.matrix(tmp)) {
+      d &lt;- matrix(rep(1,dim(tmp)[1]),ncol=1) %*% tmp[1,] - tmp
+      d.col &lt;- colSums(abs(d))
+      if (length(which(d.col != 0)) &gt; 1){
+        cat(&quot;some thing wrong at &quot;, ii, &quot;ther are&quot;, length(which(d.col != 0)), &quot;diffs \n&quot;)
+      }
+    }
+  }
+}</code></pre>
+<p>We combined the markers into 949 blocks where the markers within a block differed by at most <span class="math inline">\(1\)</span> sample. We select the most repeated marker from each block as the representative marker.</p>
+<p>中文: 将每组的众数取出来作为该组的代表. 生成新的 marker: X.</p>
+<pre class="r"><code>count &lt;- numeric(max(out.id))
+for (ii in 1:max(out.id)) {
+  tmp &lt;- marker[which(out.id==ii),]
+  if (!is.matrix(tmp)) {
+    count[ii] &lt;- which(out.id == ii)
+    next
+  }
+  tmp.unique &lt;- unique(tmp)
+  if (dim(tmp.unique)[1] == 1){
+    count[ii] &lt;- which(out.id == ii)[1]
+    next
+  }
+  tmp.count &lt;- numeric(2)
+  tmp.rec &lt;- numeric(length(which(out.id == ii)))
+  for (jj in 1:length(which(out.id == ii))) {
+    want &lt;- marker[which(out.id == ii)[jj],]
+    tmp.idx &lt;- ifelse(sum(abs(want - tmp.unique[2,])), 1, 2) 
+    tmp.count[tmp.idx] &lt;- tmp.count[tmp.idx] + 1
+    tmp.rec[jj] &lt;- tmp.idx
+  }
+  tmp.mostfreq &lt;- which.max(table(tmp.rec))[1]
+  count[ii] &lt;- which(out.id == ii)[which(tmp.rec == tmp.mostfreq)[1]]
+}
+
+X &lt;- t(marker[count,])</code></pre>
+<p>接下来选择一部分 Y, 因为Y的维度太大了, 希望可以削减一些</p>
+<pre class="r"><code># From The yeast MAPK pathway from the KEGG database http://www.genome.jp/kegg/pathway/sce/sce04011.html
+
+MAPK.pathway.name &lt;- c(&#39;MATALPHA1&#39;, &#39;MATALPHA2&#39;, &#39;STE2&#39;, &#39;STE3&#39;, &#39;GPA1&#39;, &#39;STE4&#39;, &#39;STE18&#39;, &#39;CDC42&#39;, &#39;CDC24&#39;, &#39;BEM1&#39;, &#39;STE20&#39;, &#39;BNI1&#39;, &#39;STE11&#39;, &#39;STE5&#39;, &#39;STE7&#39;, &#39;FUS3&#39;, &#39;MSG5&#39;, &#39;STE12&#39;, &#39;DIG1&#39;, &#39;DIG2&#39;, &#39;FAR1&#39;, &#39;MCM1&#39;, &#39;FUS1&#39;, &#39;WSC4&#39;, &#39;WSC2&#39;, &#39;WSC3&#39;, &#39;MID2&#39;, &#39;RHO1&#39;, &#39;FKS1&#39;, &#39;PKC1&#39;, &#39;BCK1&#39;, &#39;MKK1&#39;, &#39;MKK2&#39;, &#39;SLT2&#39;, &#39;MLP2&#39;, &#39;RLM1&#39;, &#39;SWI4&#39;, &#39;SWI6&#39;, &#39;FKS3&#39;, &#39;SHO1&#39;, &#39;SLN1&#39;, &#39;YPD1&#39;, &#39;SSK1&#39;, &#39;SSK2&#39;, &#39;PBS2&#39;, &#39;HOG1&#39;, &#39;MSN2&#39;, &#39;MSN4&#39;, &#39;GLO1&#39;, &#39;CTT1&#39;, &#39;RAS2&#39;, &#39;KSS1&#39;, &#39;TEC1&#39;)
+# CHANGE: WSC1-&gt;WSC4; FKS2-&gt;FKS3
+
+idx.exp &lt;- sapply(MAPK.pathway.name, function(x) which(rownames(exp) == x))
+Y &lt;- exp[idx.exp,]
+
+
+if (!DEBUG){
+  rm(&quot;idx.exp&quot;, &quot;MAPK.pathway.name&quot;)
+}
+if (!DEBUG){
+  rm(&quot;count&quot;, &quot;ii&quot;, &quot;jj&quot;, &quot;out.dist&quot;, &quot;out.id&quot;, &quot;tmp.count&quot;, &quot;tmp.idx&quot;, &quot;tmp.mostfreq&quot;, &quot;tmp.rec&quot;, &quot;want&quot;, &quot;hc1.complete&quot;, &quot;tmp&quot;, &quot;tmp.unique&quot;)
+}</code></pre>
+<p>最后, 我们得到了处理过的数据 <span class="math inline">\(X \in \mathbb{R}^{112\times 949}\)</span>, <span class="math inline">\(Y \in \mathbb{R}^{112\times 53}\)</span>.</p>
 </div>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical Analysis</h2>
+<p>使用统计方法进行分析</p>
+<p>重复一下别人的实验.</p>
 </div>
 
 

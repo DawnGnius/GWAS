@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## Definition
+## Introduction & Definition
 
 ### eQTL
 
@@ -89,51 +89,23 @@ head(yeast)
 
 In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
 
-
-
-```{r, message=FALSE, eval=FALSE, include=FALSE}
-rm(list=ls())
-library(trigger)
-
-data(yeast)
-
-# head(yeast$marker)
-# 
-# head(yeast$exp)
-
-#reduce data size for vignette run time
-set.seed(123)
-#select subset of 400 traits
-gidx = sort(sample(1:6216, size = 400))
-yeast$exp = yeast$exp[gidx,]
-yeast$exp.pos = yeast$exp.pos[gidx,]
-#select subset of markers
-midx = sort(sample(1:3244, size = 500))
-yeast$marker = yeast$marker[midx,]
-yeast$marker.pos = yeast$marker.pos[midx,]
-
-attach(yeast)
-dim(exp)
-
-
-trig.obj <- trigger.build(marker=marker, exp=exp, marker.pos=marker.pos, exp.pos=exp.pos)
-trig.obj
-detach(yeast)
-
-
-trig.obj = trigger.link(trig.obj, norm = TRUE)
-plot(trig.obj, type = "link", cutoff = 1e-5)
-```
-
+接下来使用 trigger 数据, 进行预处理. 降低 $X$ 与 $Y$ 的维度.
 ```{r, message=FALSE}
 rm(list=ls())
-library(trigger)
+DEBUG <- FALSE
+
+# load data from trigger package or tmp.RData
+if (FALSE){
+  library(trigger)
+  data(yeast)
+} else{
+  load('tmp.RData')
+}
+
 library(stats)
 
-data(yeast)
-
 marker <- yeast$marker
-
+exp <- yeast$exp
 ```
 
 Distance clustering, d <= 1
@@ -143,21 +115,25 @@ Distance clustering, d <= 1
 out.dist <- dist(marker, method="manhattan")
 hc1.complete <- hclust(dist(marker, method="manhattan"), method="complete") # complete method using the max distance within a group
 out.id <- cutree(hc1.complete, h=1)                                         # h is the maximum distance to be cut
-print(max(out.id))
-for (ii in 1:max(out.id)) {
-  tmp <- marker[which(out.id==ii),]                                         
-  if (is.matrix(tmp)) {
-    d <- matrix(rep(1,dim(tmp)[1]),ncol=1) %*% tmp[1,] - tmp
-    d.col <- colSums(abs(d))
-    if (length(which(d.col != 0)) > 1){
-      cat("some thing wrong at ", ii, "ther are", length(which(d.col != 0)), "diffs \n")
+if (DEBUG) print(max(out.id))
+if (DEBUG){
+  for (ii in 1:max(out.id)) {
+    tmp <- marker[which(out.id==ii),]                                         
+    if (is.matrix(tmp)) {
+      d <- matrix(rep(1,dim(tmp)[1]),ncol=1) %*% tmp[1,] - tmp
+      d.col <- colSums(abs(d))
+      if (length(which(d.col != 0)) > 1){
+        cat("some thing wrong at ", ii, "ther are", length(which(d.col != 0)), "diffs \n")
+      }
     }
   }
 }
-
 ```
 
-讲每组的众数取出来作为该组的代表. 生成新的 marker: X.
+We combined the markers into `r max(out.id)` blocks where the markers within a block differed by at most $1$ sample. 
+We select the most repeated marker from each block as the representative marker. 
+
+中文: 将每组的众数取出来作为该组的代表. 生成新的 marker: X. 
 ```{r}
 count <- numeric(max(out.id))
 for (ii in 1:max(out.id)) {
@@ -183,7 +159,33 @@ for (ii in 1:max(out.id)) {
   count[ii] <- which(out.id == ii)[which(tmp.rec == tmp.mostfreq)[1]]
 }
 
-X <- marker[count,]
+X <- t(marker[count,])
 ```
 
+接下来选择一部分 Y, 因为Y的维度太大了, 希望可以削减一些
+```{r}
+# From The yeast MAPK pathway from the KEGG database http://www.genome.jp/kegg/pathway/sce/sce04011.html
+MAPK.pathway.name <- c('MATALPHA1', 'MATALPHA2', 'STE2', 'STE3', 'GPA1', 'STE4', 'STE18', 'CDC42', 'CDC24', 'BEM1', 'STE20', 'BNI1', 'STE11', 'STE5', 'STE7', 'FUS3', 'MSG5', 'STE12', 'DIG1', 'DIG2', 'FAR1', 'MCM1', 'FUS1', 'WSC4', 'WSC2', 'WSC3', 'MID2', 'RHO1', 'FKS1', 'PKC1', 'BCK1', 'MKK1', 'MKK2', 'SLT2', 'MLP2', 'RLM1', 'SWI4', 'SWI6', 'FKS3', 'SHO1', 'SLN1', 'YPD1', 'SSK1', 'SSK2', 'PBS2', 'HOG1', 'MSN2', 'MSN4', 'GLO1', 'CTT1', 'RAS2', 'KSS1', 'TEC1')
+# CHANGE: WSC1->WSC4; FKS2->FKS3
 
+idx.exp <- sapply(MAPK.pathway.name, function(x) which(rownames(exp) == x))
+Y <- exp[idx.exp,]
+
+
+if (!DEBUG){
+  rm("idx.exp", "MAPK.pathway.name")
+}
+if (!DEBUG){
+  rm("count", "ii", "jj", "out.dist", "out.id", "tmp.count", "tmp.idx", "tmp.mostfreq", "tmp.rec", "want", "hc1.complete", "tmp", "tmp.unique")
+}
+```
+
+最后, 我们得到了处理过的数据 $X \in \mathbb{R}^{112\times 949}$, $Y \in \mathbb{R}^{112\times 53}$. 
+
+
+
+## Statistical Analysis
+
+使用统计方法进行分析
+
+重复一下别人的实验. 
