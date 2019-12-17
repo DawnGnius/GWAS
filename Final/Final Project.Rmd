@@ -162,7 +162,7 @@ for (ii in 1:max(out.id)) {
 X <- t(marker[count,])
 ```
 
-接下来选择一部分 Y, 因为Y的维度太大了, 希望可以削减一些
+Next, I am going to reduce the dimension of $Y$. 
 ```{r}
 # From The yeast MAPK pathway from the KEGG database http://www.genome.jp/kegg/pathway/sce/sce04011.html
 MAPK.pathway.name <- c('MATALPHA1', 'MATALPHA2', 'STE2', 'STE3', 'GPA1', 'STE4', 'STE18', 'CDC42', 'CDC24', 'BEM1', 'STE20', 'BNI1', 'STE11', 'STE5', 'STE7', 'FUS3', 'MSG5', 'STE12', 'DIG1', 'DIG2', 'FAR1', 'MCM1', 'FUS1', 'WSC4', 'WSC2', 'WSC3', 'MID2', 'RHO1', 'FKS1', 'PKC1', 'BCK1', 'MKK1', 'MKK2', 'SLT2', 'MLP2', 'RLM1', 'SWI4', 'SWI6', 'FKS3', 'SHO1', 'SLN1', 'YPD1', 'SSK1', 'SSK2', 'PBS2', 'HOG1', 'MSN2', 'MSN4', 'GLO1', 'CTT1', 'RAS2', 'KSS1', 'TEC1')
@@ -201,11 +201,11 @@ sis1 <- t(X) %*% Y[,1]
 ```
 
 ### SOFAR
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 library(rrpack)
-source('./SOFAR/rrpack/R/sofar.R')
-source('./SOFAR/rrpack/R/RcppExports.R')
-source('./SOFAR/rrpack/R/penreg.R')
+# source('./SOFAR/rrpack/R/sofar.R')
+# source('./SOFAR/rrpack/R/RcppExports.R')
+# source('./SOFAR/rrpack/R/penreg.R')
 
 res.sofar <- cv.sofar(Y, X, nrank=3, ic.type="GCV", control=list(lam.min.factor=5e-7, lam.max.factor=1e-4, nlam=100, methodA="lasso", methodB="lasso"), DEBUG=TRUE)
 # summary(res.sofar)
@@ -221,14 +221,27 @@ heatmap(Y)
 heatmap(X%*%res.sofar$U%*%diag(res.sofar$D)%*%t(res.sofar$V))
 ```
 
-```{r}
+```{r, warning=FALSE}
+# load the packages and codes
 library(rrpack)
-source('./SOFAR/rrpack/R/sofar.R')
-source('./SOFAR/rrpack/R/RcppExports.R')
-source('./SOFAR/rrpack/R/penreg.R')
+# source("./heatmap.3.r")
 
-res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.0155, lamB=0.02, lamD=0.1))
+# Estimation
+res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.2, lamB=0.08, lamD=0.1))
 
-heatmap(Y, Colv = NA)
-heatmap(X%*%res.sofar$U%*%diag(res.sofar$D)%*%t(res.sofar$V), Colv = NA)
+# check for sparsity of U
+u.rowsums <- rowSums(abs(res.sofar$U))
+nonzero.u.hat <- length(which(u.rowsums != 0))
+# check for sparsity of V
+v.rowsums <- rowSums(abs(res.sofar$V))
+nonzero.v.hat <- length(which(v.rowsums != 0))
+# print the result
+cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
+
+
+# heatmap of Y
+# # par(mfcol=c(1,2))
+# layout(c(1, 2))
+heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
+heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
 ```
