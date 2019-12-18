@@ -239,9 +239,16 @@ nonzero.v.hat <- length(which(v.rowsums != 0))
 cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
 
 
-# heatmap of Y
-# # par(mfcol=c(1,2))
-# layout(c(1, 2))
+# # heatmap of Y
+# # layout(c(1, 2))
 heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
 heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+
+
+# plot sofar
+# par(mfrow=c(1,3))
+# layout(matrix(c(1,2,3), 1, 3, byrow = TRUE))
+plot(res.sofar, layer=1, xlab="latent predictor ", ylab="latent response ")
+plot(res.sofar, layer=2, xlim=c(-3,0), ylim=c(-10,0))
+plot(res.sofar, layer=3, xlim=c(-3,0), ylim=c(-10,0))
 ```
