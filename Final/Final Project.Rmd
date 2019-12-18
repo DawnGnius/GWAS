@@ -89,7 +89,7 @@ head(yeast)
 
 In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
 
-接下来使用 trigger 数据, 进行预处理. 降低 $X$ 与 $Y$ 的维度.
+接下来使�? trigger 数据, 进行预处�?. 降低 $X$ �? $Y$ 的维�?.
 ```{r, message=FALSE}
 rm(list=ls())
 DEBUG <- FALSE
@@ -248,9 +248,37 @@ heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, R
 # plot sofar
 # par(mfrow=c(1,3))
 # layout(matrix(c(1,2,3), 1, 3, byrow = TRUE))
-plot(res.sofar, layer=1, xlab="latent predictor ", ylab="latent response ")
-plot(res.sofar, layer=2, xlim=c(-3,0), ylim=c(-10,0))
-plot(res.sofar, layer=3, xlim=c(-3,0), ylim=c(-10,0))
+#plot(res.sofar, layer=1, xlab="latent predictor ", ylab="latent response ")
+#plot(res.sofar, layer=2, xlim=c(-3,0), ylim=c(-10,0))
+#plot(res.sofar, layer=3, xlim=c(-3,0), ylim=c(-10,0))
+
+svd_plot <- function(fit_model) {
+  U <- fit_model$U
+  V <- fit_model$V
+  D <- fit_model$D
+  X <- fit_model$X
+  Y <- fit_model$Y
+  n <- nrow(X)
+  l <- length(D)
+  #plot_x <- plot_y <-  numeric(l*n)
+  plot_x <- plot_y <-   matrix(rep(0, l * n), ncol = 1)
+  plot_label <- character(l * n)
+  for (i in 1:l) {
+    plot_x[((i - 1) * n + 1):(i * n)] <- X %*% U[, i]
+    plot_y[((i - 1) * n + 1):(i * n)] <- Y %*% V[, i]
+    plot_label[((i - 1) * n + 1):(i * n)] <-
+      paste("Layer", i, sep = " ")
+  }
+  df <- as.data.frame(cbind(plot_x, plot_y, plot_label))
+  p <- ggplot(df,
+              aes(x = plot_x, y = plot_y)) + geom_point()  + geom_smooth(method =
+                                                                           'lm', se = FALSE) +
+    facet_wrap( ~ plot_label, nrow = 1) +
+    xlab("Latent Predictor") + ylab("Latent Response")
+  print(p)
+}
+
+svd_plot(res.sofar)
 ```
 
 There is a big problem.
