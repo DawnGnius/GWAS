@@ -247,11 +247,11 @@ svd_plot <- function(fit_model) {
   X <- fit_model$X
   Y <- fit_model$Y
   n <- nrow(X)
-  l <- length(D)
-  #plot_x <- plot_y <-  numeric(l*n)
-  plot_x <- plot_y <-   matrix(rep(0, l * n), ncol = 1)
-  plot_label <- character(l * n)
-  for (i in 1:l) {
+  rank <- length(D)
+  # put 3 sets of data together into a col
+  plot_x <- plot_y <-   matrix(rep(0, rank * n), ncol = 1)
+  plot_label <- character(rank * n)
+  for (i in 1:rank) {
     plot_x[((i - 1) * n + 1):(i * n)] <- X %*% U[, i]
     plot_y[((i - 1) * n + 1):(i * n)] <- Y %*% V[, i]
     plot_label[((i - 1) * n + 1):(i * n)] <- paste("Layer", i, sep = " ")
