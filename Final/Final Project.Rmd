@@ -1,6 +1,6 @@
 ---
 title: "Final Project"
-author: "Liu Huihang"
+author: "Liu Huihang and Xu Tianchen"
 date: "12/7/2019"
 output: html_document
 ---
@@ -19,7 +19,6 @@ Genetical genomics experiments have now been routinely conducted to measure both
 
 ### Yeast
 
-酵母菌一共有 16 条染色体, 全部记录在数据中. 
 
 ### Genetic Markers. 
 A genotype indicates the genetic state of the DNA in an organism. 
@@ -29,6 +28,7 @@ It is a theoretical construct describing a genetic situation that explains the o
 
 ## Data Preparation
 
+### Loading the data
 The **yeast** dataset is a subset of the widely studied yeast expression dataset comprising of $112$ *F1* segregants from a cross between *BY4716* and *RM11-1a* strains of Saccharomyces Cerevisiae.
 
 The original dataset consists of expression values reported as $log_2(\text{sample} / \text{BY reference})$ for $7085$ genes. 
@@ -36,60 +36,39 @@ The original dataset consists of expression values reported as $log_2(\text{samp
 
 The data can be accessed in Gene Expression Omnibus (GEO) by accession number (GSE1990). 
 
-```{r, message=FALSE, eval=FALSE, include=FALSE}
-# Original data
-# https://warwick.ac.uk/fac/sci/moac/people/students/peter_cock/r/geo/
-# dat <- read.csv("GSE1990_series_matrix.txt", header=TRUE, sep = "\t")
-
-library(Biobase)
-library(GEOquery)
-
-# gse1990 <- getGEO('GSE1990', destdir=".")
-# load series and platform data from GEO
-
-gset <- getGEO("GSE1990", GSEMatrix =TRUE, getGPL=FALSE, destdir="./Data")
-if (length(gset) > 1) idx <- grep("GPL118", attr(gset, "names")) else idx <- 1
-gset <- gset[[idx]]
-
-# set parameters and draw the plot
-
-# dev.new(width=4+dim(gset)[[2]]/5, height=6)   # unsupported in rmd
-par(mar=c(2+round(max(nchar(sampleNames(gset)))/2), 4, 2, 1))
-title <- paste("GSE1990", '/', annotation(gset), " selected samples", sep ='')
-BiocGenerics::boxplot(exprs(gset), boxwex=0.7, notch=T, main=title, outline=FALSE, las=2, plot = TRUE)
-```
-
 Value distribution allows you to calculate and view the distribution of the values for the Samples you have selected. 
 Values are the original submitter-supplied data upon which GEO2R calculations are performed. 
 Viewing the distribution is important for determining if your selected Samples are suitable for comparison; see Limitations and caveats for more information. 
 Generally, median-centered values are indicative that the data are normalized and cross-comparable. 
 
+```{r, message=FALSE}
+rm(list=ls())
+DEBUG <- FALSE
+
+# load data from trigger package or tmp.RData
+if (FALSE){
+  library(trigger)
+  data(yeast)
+} else{
+  load('tmp.RData')
+}
+
+library(stats)
+
+marker <- yeast$marker
+exp <- yeast$exp
+```
+
 ### Data Preprocessing
 
 In **SOFAR**, the data is finally reduced to the size of $n=112, p=605, q=54$. 
 
-In **geneNetBP**, $n=112, p=12, q=38$. 
-Thus the final dataset is a data frame of $112$ observations (genotype) of $12$ variables (SNP markers) and normalized gene expression of $38$ variables (genes). 
 The gene expression values are discretized around the median and have two states, $1$ (above or equal to median) and $-1$ (below median). 
 There are two genotype states: $1$ or $2$. 
 
-```{r, warning=FALSE, message=FALSE, eval=FALSE, include=FALSE}
-# Data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1990
-# geneNetBP: https://cran.r-project.org/web/packages/geneNetBP/geneNetBP.pdf
-# trigger: https://bioconductor.org/packages/release/bioc/vignettes/trigger/inst/doc/trigger.pdf
-
-library(geneNetBP)    # for data(yeast)
-
-data(yeast)
-
-head(yeast)
-
-# fit.dbn(yeast[,1:12],yeast[,13:50])
-```
 
 In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
 
-接下来使�? trigger 数据, 进行预处�?. 降低 $X$ �? $Y$ 的维�?.
 ```{r, message=FALSE}
 rm(list=ls())
 DEBUG <- FALSE
@@ -133,7 +112,6 @@ if (DEBUG){
 We combined the markers into `r max(out.id)` blocks where the markers within a block differed by at most $1$ sample. 
 We select the most repeated marker from each block as the representative marker. 
 
-中文: 将每组的众数取出来作为该组的代表. 生成新的 marker: X. 
 ```{r}
 count <- numeric(max(out.id))
 for (ii in 1:max(out.id)) {
@@ -194,40 +172,57 @@ Repeat the simulation study of SOFAR.
 
 1. Estimate the covariance matrix of X
 
-2. The correlation between X and Y
+2. The marginal correlation between $X_i$ and $Y_j$
+
+We can apply a marginal gene-marker association analysis to identify markers that are associated with the expression levels of at least two genes
+with p-value less than a specific 0.05. 
+```{r}
+rm(list=ls())
+DEBUG <- FALSE
+load('tmp.RData')
+
+X.sis <- scale(X, center = TRUE, scale = TRUE)
+Y.sis <- scale(Y, center = TRUE, scale = TRUE)
+sis1 <- t(X.sis) %*% Y.sis[,1]
+```
+
+
+### Single response variable
+
+We can use lasso to fit each cols of Y by X.
 
 ```{r}
-sis1 <- t(X) %*% Y[,1]
+rm(list=ls())
+DEBUG <- FALSE
+load('tmp.RData')
+
+beta.hat <- matrix(0., dim(X)[2], dim(Y)[2])
+for (ii in 1:dim(Y)[2]) {
+  fit.cv <- glmnet::cv.glmnet(X, Y[,ii])
+  beta.hat[, ii] <- as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
+}
+
+heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
+heatmap(X %*% beta.hat, Colv = NA, Rowv=NA, col=topo.colors(256))
 ```
 
-### SOFAR
-```{r, message=FALSE, eval=FALSE}
-library(rrpack)
-# source('./SOFAR/rrpack/R/sofar.R')
-# source('./SOFAR/rrpack/R/RcppExports.R')
-# source('./SOFAR/rrpack/R/penreg.R')
+The results shows that, lasso can give a sparse estimation. 
+But the rank of estimated coefficient matrix $C$ is `r qr(beta.hat)$rank`, it means that $\hat{C}$ is full rank. 
+Also, heatmap shows that lasso loses many a detials of Y. 
+There are `r length(which(rowSums(abs(beta.hat)) != 0))` nonzero rows in $\hat{C}$. 
+Of couse, this method does not satisfy the requirement to explain the correlation between Y. 
+Because it just consider each $Y_j$ at each step. 
 
-res.sofar <- cv.sofar(Y, X, nrank=3, ic.type="GCV", control=list(lam.min.factor=5e-7, lam.max.factor=1e-4, nlam=100, methodA="lasso", methodB="lasso"), DEBUG=TRUE)
-# summary(res.sofar)
-# note: lam.min.factor and lam.max.factor are lower and upper factors multiplied by lam.max=28176.lam.max is a large number. So lam.min.factor should be # cv.sofar use GIC rather than CV
-nonzero.u <- which(res.sofar$U != 0)
 
-U1 <- rowSums(res.sofar$U)
-length(which(U1 != 0))
-
-which(res.sofar$U == 0)
-
-heatmap(Y)
-heatmap(X%*%res.sofar$U%*%diag(res.sofar$D)%*%t(res.sofar$V))
-```
+### Multi response variable
 
 ```{r, warning=FALSE}
 # load the packages and codes
 library(rrpack)
-# source("./heatmap.3.r")
+library(ggplot2)
 
 # Estimation
-res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.2, lamB=0.08, lamD=0.1))
+res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.1, lamB=0.1, lamD=0.1))
 
 # check for sparsity of U
 u.rowsums <- rowSums(abs(res.sofar$U))
@@ -240,18 +235,11 @@ cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", non
 
 
 # # heatmap of Y
-# # layout(c(1, 2))
 heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
 heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
 
 
 # plot sofar
-# par(mfrow=c(1,3))
-# layout(matrix(c(1,2,3), 1, 3, byrow = TRUE))
-#plot(res.sofar, layer=1, xlab="latent predictor ", ylab="latent response ")
-#plot(res.sofar, layer=2, xlim=c(-3,0), ylim=c(-10,0))
-#plot(res.sofar, layer=3, xlim=c(-3,0), ylim=c(-10,0))
-
 svd_plot <- function(fit_model) {
   U <- fit_model$U
   V <- fit_model$V
@@ -266,22 +254,53 @@ svd_plot <- function(fit_model) {
   for (i in 1:l) {
     plot_x[((i - 1) * n + 1):(i * n)] <- X %*% U[, i]
     plot_y[((i - 1) * n + 1):(i * n)] <- Y %*% V[, i]
-    plot_label[((i - 1) * n + 1):(i * n)] <-
-      paste("Layer", i, sep = " ")
+    plot_label[((i - 1) * n + 1):(i * n)] <- paste("Layer", i, sep = " ")
   }
   df <- as.data.frame(cbind(plot_x, plot_y, plot_label))
   p <- ggplot(df,
-              aes(x = plot_x, y = plot_y)) + geom_point()  + geom_smooth(method =
-                                                                           'lm', se = FALSE) +
-    facet_wrap( ~ plot_label, nrow = 1) +
-    xlab("Latent Predictor") + ylab("Latent Response")
+              aes(x = plot_x, y = plot_y)) + geom_point()  + 
+              geom_smooth(method = 'lm', se = FALSE) +
+              facet_wrap( ~ plot_label, nrow = 1) +
+              xlab("Latent Predictor") + ylab("Latent Response")
   print(p)
 }
 
 svd_plot(res.sofar)
 ```
 
-There is a big problem.
-I cannot draw a multi-plot using 'par' or 'layout' in a normal way. 
-Even I can not change the range of X-axis or Y-axis. 
-I want to get two similar figures in SOFAR paper. 
+
+Further, we performed a marginal gene-marker association analysis to identify markers that are associated with the expression levels of at least two genes with a p-value less than $0.05$, resulting in a total of $p = 776$ markers.
+
+```{r, warning=FALSE}
+idx.marker <- numeric(dim(X)[2])
+for (ii in 1:dim(X)[2]){
+  counter.ii <- 0
+  for (jj in 1:dim(Y)[2]) {
+    if (cor.test(X[,ii], Y[,jj])$p.value < 0.05) counter.ii <- counter.ii + 1
+    if (counter.ii == 2) {
+      idx.marker[ii] <- 1
+      break
+    }
+  }
+}
+X <- X[, which(idx.marker == 1)]
+
+# Estimation
+res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.2, lamB=0.1, lamD=0.1))
+
+# check for sparsity of U
+u.rowsums <- rowSums(abs(res.sofar$U))
+nonzero.u.hat <- length(which(u.rowsums != 0))
+# check for sparsity of V
+v.rowsums <- rowSums(abs(res.sofar$V))
+nonzero.v.hat <- length(which(v.rowsums != 0))
+# print the result
+cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
+
+# # heatmap of Y
+heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
+heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+
+# plot sofar
+svd_plot(res.sofar)
+```

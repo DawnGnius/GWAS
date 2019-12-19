@@ -1,0 +1,42 @@
+
+
+In **geneNetBP**, $n=112, p=12, q=38$. 
+Thus the final dataset is a data frame of $112$ observations (genotype) of $12$ variables (SNP markers) and normalized gene expression of $38$ variables (genes). 
+
+```{r, message=FALSE, eval=FALSE, include=FALSE}
+# Original data
+# https://warwick.ac.uk/fac/sci/moac/people/students/peter_cock/r/geo/
+# dat <- read.csv("GSE1990_series_matrix.txt", header=TRUE, sep = "\t")
+
+library(Biobase)
+library(GEOquery)
+
+# gse1990 <- getGEO('GSE1990', destdir=".")
+# load series and platform data from GEO
+
+gset <- getGEO("GSE1990", GSEMatrix =TRUE, getGPL=FALSE, destdir="./Data")
+if (length(gset) > 1) idx <- grep("GPL118", attr(gset, "names")) else idx <- 1
+gset <- gset[[idx]]
+
+# set parameters and draw the plot
+
+# dev.new(width=4+dim(gset)[[2]]/5, height=6)   # unsupported in rmd
+par(mar=c(2+round(max(nchar(sampleNames(gset)))/2), 4, 2, 1))
+title <- paste("GSE1990", '/', annotation(gset), " selected samples", sep ='')
+BiocGenerics::boxplot(exprs(gset), boxwex=0.7, notch=T, main=title, outline=FALSE, las=2, plot = TRUE)
+```
+
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE, include=FALSE}
+# Data: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1990
+# geneNetBP: https://cran.r-project.org/web/packages/geneNetBP/geneNetBP.pdf
+# trigger: https://bioconductor.org/packages/release/bioc/vignettes/trigger/inst/doc/trigger.pdf
+
+library(geneNetBP)    # for data(yeast)
+
+data(yeast)
+
+head(yeast)
+
+# fit.dbn(yeast[,1:12],yeast[,13:50])
+```
