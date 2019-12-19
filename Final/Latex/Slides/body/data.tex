@@ -1,0 +1,73 @@
+\section{Real Data: Yeast}
+\begin{frame}
+    \sectionpage
+\end{frame}
+
+\begin{frame}\frametitle{Data Description}
+    \begin{enumerate}
+        \item Why Yeast?
+        \item Where is our data come from? 
+        \item How does the data measured? 
+        \item What does our data describe? 
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data Description}
+    The data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990. 
+    The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a \footnote[1]{Brem, R. B., Kruglyak, L. (2005). The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences, 102(5), 1572-1577.}. 
+
+    Gene expression measurements were obtained for $6216$ open reading frames in $112$ segregants, and genotypes were identified at $3244$ markers. 
+
+\end{frame}
+
+\begin{frame}
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|l|p{7cm}|}
+            \hline
+            Title                           &   Genetic complexity in yeast transcripts \\ \hline
+            Organism                        &   Saccharomyces cerevisiae                \\ \hline
+            Experiment type                 &   Expression profiling by array           \\ \hline
+            \multirow{4}{*}{Data Size}      &   Data set consists of a $3244\times112$ \textbf{genotype matrix} with $3244$ genotypes in rows and $112$ samples in columns and a $6216\times112$ \textbf{gene expression matrix} with $6216$ genes in rows and $112$ samples in columns.  \\ \hline
+            \multirow{3}{*}{Description}    &   cDNA array of Saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$\\ 
+            \hline
+        \end{tabular}
+        \caption{Information About Data}
+    \end{table}
+
+\end{frame}
+
+\begin{frame}\frametitle{Question of Interesting}
+    \begin{enumerate}
+        % \renewcommand{\labelenumi}{(\theenumi)}
+        \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
+        \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
+    \end{enumerate}
+    
+
+\end{frame}
+
+
+\section{Data Preparation}
+\begin{frame}
+    \sectionpage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Processing Markers Data}
+
+    \begin{itemize}
+        \item Hierarchical clustering by complete distance ...
+        \item Select representative markers.
+        \item Marginal gene-marker association analysis.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Processing Expression Level Data}
+
+    We choose genes according to MAPK signaling pathways \footnote[2]{Kanehisa, M., Goto, S., Sato, Y., Kawashima, M., Furumichi, M. and Tanabe, M. (2014) Data, information, knowledge and principle: Back to metabolism in KEGG. Nucleic Acids Res., 42, D199–D205.}
+
+    * * Add pictures ?? 
+\end{frame}
