@@ -202,8 +202,46 @@ for (ii in 1:dim(Y)[2]) {
   beta.hat[, ii] <- as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
 }
 
-heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
-heatmap(X %*% beta.hat, Colv = NA, Rowv=NA, col=topo.colors(256))
+# heatmap
+gene_names <- colnames(Y)
+sample_num <- 1:112
+df_lasso <- expand.grid(gene_names, sample_num)
+df_lasso$fill1 <- as.vector(t(Y))
+df_lasso$fill2 <- as.vector(t(X %*% beta.hat))
+p1_real <-  ggplot(df_lasso, aes(Var1, Var2, fill = fill1)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red",
+  high = "blue") + theme(
+  panel.background = element_rect(fill = 'white', colour = 'white'),
+  plot.title = element_text(hjust = 0.5),
+  legend.position = "none",
+  axis.text.x = element_text(
+  angle = 90,
+  vjust = 0,
+  size = 4.5,
+  hjust = .5
+  ),
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+  ) + ggtitle("Real")
+p2_lasso <- ggplot(df_lasso, aes(Var1, Var2, fill = fill2)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red",
+  high = "blue") + theme(
+  panel.background = element_rect(fill = 'white', colour = 'white'),
+  plot.title = element_text(hjust = 0.5),
+  legend.position = "none",
+  axis.text.x = element_text(
+  angle = 90,
+  vjust = 0,
+  size = 4.5,
+  hjust = .5
+  ),
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+  ) + ggtitle("Lasso")
+p_lasso <- ggarrange(p1_real, p2_lasso, nrow = 1)
+p_lasso
 ```
 
 The results shows that, lasso can give a sparse estimation. 
@@ -235,9 +273,47 @@ cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", non
 
 
 # # heatmap of Y
-heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
-heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+#heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
+#heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+heatmap_plot <- function(model_fit) {
+  X <- model_fit$X
+  Y <- model_fit$Y
+  U <- model_fit$U
+  V <- model_fit$V
+  D <- diag(model_fit$D)
+  gene_names <- colnames(Y)
+  sample_num <- 1:112
+  df <- expand.grid(gene_names, sample_num)
+  df$fill1 <- (as.vector(t(Y)))
+  df$fill2 <- (as.vector(t(X %*% U %*% D %*% t(V))))
+  #df[df==0] <- NA
+  p1 <-
+    ggplot(df, aes(Var1,Var2,fill=fill1)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "red",
+                         high = "blue"
+                         
+                        ) +theme(panel.background = element_rect(fill = 'white', colour = 'white'),plot.title = element_text(hjust = 0.5),legend.position = "none",axis.text.x = element_text(
+                           angle = 90,
+                           vjust = 0,
+                           size = 4.5,
+                           hjust = .5
+                         ),axis.title.x=element_blank(),axis.title.y=element_blank())+ggtitle("Real")
+p2 <-
+  ggplot(df, aes(Var1, Var2, fill = fill2)) + geom_tile() +
+  scale_fill_gradient2(low = "red",
+                       high = "blue",
+                       mid = "white") + theme(panel.background = element_rect(fill = 'white', colour = 'white'),plot.title = element_text(hjust = 0.5),legend.position = "none", axis.text.x = element_text(
+                         angle = 90,
+                         vjust = 1,
+                         size = 4.5,
+                         hjust = .5
+                       ),axis.title.x=element_blank(),axis.title.y=element_blank())+ggtitle("Estimated")
+p <- ggarrange(p1, p2, nrow = 1)
+print(p)
+}
 
+heatmap_plot(res.sofar)
 
 # plot sofar
 svd_plot <- function(fit_model) {
@@ -298,8 +374,7 @@ nonzero.v.hat <- length(which(v.rowsums != 0))
 cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
 
 # # heatmap of Y
-heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
-heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+heatmap_plot(res.sofar)
 
 # plot sofar
 svd_plot(res.sofar)
