@@ -74,7 +74,7 @@ rm(list=ls())
 DEBUG <- FALSE
 
 # load data from trigger package or tmp.RData
-if (FALSE){
+if (TRUE){
   library(trigger)
   data(yeast)
 } else{
@@ -149,7 +149,6 @@ MAPK.pathway.name <- c('MATALPHA1', 'MATALPHA2', 'STE2', 'STE3', 'GPA1', 'STE4',
 idx.exp <- sapply(MAPK.pathway.name, function(x) which(rownames(exp) == x))
 Y <- t(exp[idx.exp,])
 
-
 if (!DEBUG){
   rm("idx.exp", "MAPK.pathway.name")
 }
@@ -175,7 +174,7 @@ Repeat the simulation study of SOFAR.
 2. The marginal correlation between $X_i$ and $Y_j$
 
 We can apply a marginal gene-marker association analysis to identify markers that are associated with the expression levels of at least two genes
-with p-value less than a specific 0.05. 
+with p-value less than a specific level such as $0.05$. 
 ```{r}
 rm(list=ls())
 DEBUG <- FALSE
@@ -191,15 +190,18 @@ sis1 <- t(X.sis) %*% Y.sis[,1]
 
 We can use lasso to fit each cols of Y by X.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 rm(list=ls())
 DEBUG <- FALSE
 load('tmp.RData')
+library(ggplot2)
+library(ggpubr)     # for ggarrange
 
+# lasso
 beta.hat <- matrix(0., dim(X)[2], dim(Y)[2])
 for (ii in 1:dim(Y)[2]) {
   fit.cv <- glmnet::cv.glmnet(X, Y[,ii])
-  beta.hat[, ii] <- as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
+  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.1se)$beta)
 }
 
 # heatmap
@@ -209,55 +211,47 @@ df_lasso <- expand.grid(gene_names, sample_num)
 df_lasso$fill1 <- as.vector(t(Y))
 df_lasso$fill2 <- as.vector(t(X %*% beta.hat))
 p1_real <-  ggplot(df_lasso, aes(Var1, Var2, fill = fill1)) +
-  geom_tile() +
-  scale_fill_gradient2(low = "red",
-  high = "blue") + theme(
-  panel.background = element_rect(fill = 'white', colour = 'white'),
-  plot.title = element_text(hjust = 0.5),
-  legend.position = "none",
-  axis.text.x = element_text(
-  angle = 90,
-  vjust = 0,
-  size = 4.5,
-  hjust = .5
-  ),
-  axis.title.x = element_blank(),
-  axis.title.y = element_blank()
-  ) + ggtitle("Real")
+  geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
+  theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0,
+      size = 4.5,
+      hjust = .5),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) + 
+  ggtitle("Real Y")
 p2_lasso <- ggplot(df_lasso, aes(Var1, Var2, fill = fill2)) +
-  geom_tile() +
-  scale_fill_gradient2(low = "red",
-  high = "blue") + theme(
-  panel.background = element_rect(fill = 'white', colour = 'white'),
-  plot.title = element_text(hjust = 0.5),
-  legend.position = "none",
-  axis.text.x = element_text(
-  angle = 90,
-  vjust = 0,
-  size = 4.5,
-  hjust = .5
-  ),
-  axis.title.x = element_blank(),
-  axis.title.y = element_blank()
-  ) + ggtitle("Lasso")
+  geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
+  theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0,
+      size = 4.5,
+      hjust = .5),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) + 
+  ggtitle("Estimated by Lasso")
 p_lasso <- ggarrange(p1_real, p2_lasso, nrow = 1)
 p_lasso
 ```
 
 The results shows that, lasso can give a sparse estimation. 
 But the rank of estimated coefficient matrix $C$ is `r qr(beta.hat)$rank`, it means that $\hat{C}$ is full rank. 
-Also, heatmap shows that lasso loses many a detials of Y. 
+Also, heatmap shows that lasso loses many a detials of $Y$. 
 There are `r length(which(rowSums(abs(beta.hat)) != 0))` nonzero rows in $\hat{C}$. 
-Of couse, this method does not satisfy the requirement to explain the correlation between Y. 
+Of couse, this method does not satisfy the requirement to explain the correlation between $Y$. 
 Because it just consider each $Y_j$ at each step. 
-
 
 ### Multi response variable
 
 ```{r, warning=FALSE}
 # load the packages and codes
 library(rrpack)
-library(ggplot2)
 
 # Estimation
 res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.1, lamB=0.1, lamD=0.1))
@@ -269,12 +263,10 @@ nonzero.u.hat <- length(which(u.rowsums != 0))
 v.rowsums <- rowSums(abs(res.sofar$V))
 nonzero.v.hat <- length(which(v.rowsums != 0))
 # print the result
-cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
+cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", 
+    nonzero.v.hat, "non-zero rows in the estimation of V.")
 
-
-# # heatmap of Y
-#heatmap(Y, Colv = NA, Rowv=NA, col=topo.colors(256))
-#heatmap(X %*% res.sofar$U %*% diag(res.sofar$D) %*% t(res.sofar$V), Colv = NA, Rowv=NA, col=topo.colors(256))
+# heatmap of Y and estimated
 heatmap_plot <- function(model_fit) {
   X <- model_fit$X
   Y <- model_fit$Y
@@ -292,23 +284,32 @@ heatmap_plot <- function(model_fit) {
     geom_tile() +
     scale_fill_gradient2(low = "red",
                          high = "blue"
-                         
-                        ) +theme(panel.background = element_rect(fill = 'white', colour = 'white'),plot.title = element_text(hjust = 0.5),legend.position = "none",axis.text.x = element_text(
+                        ) + 
+    theme(panel.background = element_rect(fill = 'white', colour = 'white'), 
+          plot.title = element_text(hjust = 0.5), legend.position = "none", 
+          axis.text.x = element_text(
                            angle = 90,
                            vjust = 0,
                            size = 4.5,
                            hjust = .5
-                         ),axis.title.x=element_blank(),axis.title.y=element_blank())+ggtitle("Real")
+                         ),
+          axis.title.x=element_blank(), axis.title.y=element_blank()) + 
+    ggtitle("Real Y")
 p2 <-
   ggplot(df, aes(Var1, Var2, fill = fill2)) + geom_tile() +
   scale_fill_gradient2(low = "red",
                        high = "blue",
-                       mid = "white") + theme(panel.background = element_rect(fill = 'white', colour = 'white'),plot.title = element_text(hjust = 0.5),legend.position = "none", axis.text.x = element_text(
+                       mid = "white") + 
+  theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+        plot.title = element_text(hjust = 0.5),legend.position = "none", 
+        axis.text.x = element_text(
                          angle = 90,
                          vjust = 1,
                          size = 4.5,
                          hjust = .5
-                       ),axis.title.x=element_blank(),axis.title.y=element_blank())+ggtitle("Estimated")
+                       ),
+        axis.title.x=element_blank(),axis.title.y=element_blank()) +
+  ggtitle("Estimated Y")
 p <- ggarrange(p1, p2, nrow = 1)
 print(p)
 }
@@ -333,11 +334,10 @@ svd_plot <- function(fit_model) {
     plot_label[((i - 1) * n + 1):(i * n)] <- paste("Layer", i, sep = " ")
   }
   df <- as.data.frame(cbind(plot_x, plot_y, plot_label))
-  p <- ggplot(df,
-              aes(x = plot_x, y = plot_y)) + geom_point()  + 
-              geom_smooth(method = 'lm', se = FALSE) +
-              facet_wrap( ~ plot_label, nrow = 1) +
-              xlab("Latent Predictor") + ylab("Latent Response")
+  p <- ggplot(df, aes(x = plot_x, y = plot_y)) + 
+    geom_point() + geom_smooth(method = 'lm', se = FALSE) +
+    facet_wrap( ~ plot_label, nrow = 1) +
+    xlab("Latent Predictor") + ylab("Latent Response")
   print(p)
 }
 
@@ -371,7 +371,8 @@ nonzero.u.hat <- length(which(u.rowsums != 0))
 v.rowsums <- rowSums(abs(res.sofar$V))
 nonzero.v.hat <- length(which(v.rowsums != 0))
 # print the result
-cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", nonzero.v.hat, "non-zero rows in the estimation of V.")
+cat("There are", nonzero.u.hat, "non-zero rows in the estimation of U, and", 
+    nonzero.v.hat, "non-zero rows in the estimation of V.")
 
 # # heatmap of Y
 heatmap_plot(res.sofar)
