@@ -12,8 +12,26 @@
     \end{enumerate}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Data Description}
+\begin{frame}\frametitle{Yeast}
+    \begin{itemize}
+        \item a model organism for gene expression study
+        \item single-celled eukaryotes with short life cycle, small genome size
+        \item the growth can be controlled easily by experimenters
+        \item have many genes similar to human being
+    \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{GWAS?? or yeast expression study??}
+    \begin{itemize}
+        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
+        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
+        \item a few functionally distinct signaling pathways of genes exist
+        \item the association structure between the eQTLs and the gene is of low rank
+        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
+    \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Data Description}
     The data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990. 
     The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a \footnote[1]{Brem, R. B., Kruglyak, L. (2005). The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences, 102(5), 1572-1577.}. 
 
@@ -38,14 +56,37 @@
 
 \end{frame}
 
+\begin{frame}\frametitle{Remarks}
+    \begin{itemize}
+        \item the value of the eQTLs: 1 or 2
+    
+        we can add some explaination at the Introduction part ????? about SNP has only 3 choices or some thing similar ???
+        % we add 1 to each original value for the convenient for mathematical processing
+
+        \item Y: almost continuous because of the use of microarray technology (microarray) to sequence the samples.
+      
+    \end{itemize}
+\end{frame}
+
 \begin{frame}\frametitle{Question of Interesting}
     \begin{enumerate}
         % \renewcommand{\labelenumi}{(\theenumi)}
         \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
         \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
     \end{enumerate}
-    
+\end{frame}
 
+\begin{frame}\frametitle{ xx ??}
+    \begin{block}{Question of Interesting}
+        \begin{itemize}
+        \item How the eQTLs influence the expression level of genes in the yeast MAPK signaling pathways by analyzing a yeast dataset?
+        \item Which group of eQTLs affect certain group of genes?
+        \end{itemize}
+    \end{block}
+    
+    \begin{block}{statistical question equivalent}
+        reveal multiple distinct associations between subsets of genes and subsets of genetic variants(eQTLs)
+    \end{block}
 \end{frame}
 
 
