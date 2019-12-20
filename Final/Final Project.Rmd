@@ -201,7 +201,7 @@ library(ggpubr)     # for ggarrange
 beta.hat <- matrix(0., dim(X)[2], dim(Y)[2])
 for (ii in 1:dim(Y)[2]) {
   fit.cv <- glmnet::cv.glmnet(X, Y[,ii])
-  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.1se)$beta)
+  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
 }
 
 # heatmap
