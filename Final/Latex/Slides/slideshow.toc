@@ -1,6 +1,6 @@
-\beamer@sectionintoc {1}{Intruduction}{3}{0}{1}
-\beamer@sectionintoc {2}{Real Data: Yeast}{6}{0}{2}
-\beamer@sectionintoc {3}{Data Preparation}{15}{0}{3}
-\beamer@sectionintoc {4}{Methodology}{18}{0}{4}
-\beamer@sectionintoc {5}{Summary}{23}{0}{5}
-\beamer@sectionintoc {6}{Discussion}{27}{0}{6}
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@sectionintoc {2}{Real Data: Yeast}{5}{0}{2}
+\beamer@sectionintoc {3}{Data Preparation}{14}{0}{3}
+\beamer@sectionintoc {4}{Methodology}{17}{0}{4}
+\beamer@sectionintoc {5}{Summary}{22}{0}{5}
+\beamer@sectionintoc {6}{Discussion}{26}{0}{6}
