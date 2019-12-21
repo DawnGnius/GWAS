@@ -1,5 +1,0 @@
-\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
-\beamer@sectionintoc {2}{Real Data: Yeast}{7}{0}{2}
-\beamer@sectionintoc {3}{Data Preparation}{16}{0}{3}
-\beamer@sectionintoc {4}{Methodology}{19}{0}{4}
-\beamer@sectionintoc {5}{Summary}{30}{0}{5}
