@@ -201,7 +201,7 @@ library(ggpubr)     # for ggarrange
 beta.hat <- matrix(0., dim(X)[2], dim(Y)[2])
 for (ii in 1:dim(Y)[2]) {
   fit.cv <- glmnet::cv.glmnet(X, Y[,ii])
-  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.1se)$beta)
+  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
 }
 
 # heatmap
@@ -254,7 +254,7 @@ Because it just consider each $Y_j$ at each step.
 library(rrpack)
 
 # Estimation
-res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.1, lamB=0.1, lamD=0.1))
+res.sofar <- sofar(Y, X, nrank=3, ic.type="GIC", control=list(lamA=0.15, lamB=0.1, lamD=0.1))
 
 # check for sparsity of U
 u.rowsums <- rowSums(abs(res.sofar$U))
