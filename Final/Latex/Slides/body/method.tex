@@ -11,7 +11,7 @@
 
     \begin{enumerate}
         \item Hierarchical clustering by complete distance.
-        
+
         We got $949$ blocks where the SNPs within a block differed by at most $1$ sample. 
 
         \item Select representative SNPs. 
@@ -66,7 +66,7 @@
     An intuitive method is to regress each $Y_j$ with $X$, and we will get $q$ linear models. 
     We can use LASSO to get the estimated coefficient vector $\hat{\beta}_{(j)}\in\mathbb{R}^{p}$. 
     
-    Then combind $q$ coefficient vectors $\hat{\beta}_{(j)}$ into a matrix $\hat{\boldsymbol{\beta}}\in\mathbb{R}^{p\times q}$ by column. 
+    Then combine $q$ coefficient vectors $\hat{\beta}_{(j)}$ into a matrix $\hat{\boldsymbol{\beta}}\in\mathbb{R}^{p\times q}$ by column. 
 \end{frame}
 
 \begin{frame}
@@ -106,7 +106,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.8\textwidth]{./figs/heatmap_grpreg.pdf}
-        \caption{Heatmaps of real $Y$ and $\hat{Y}$ by SOFAR}
+        \caption{Heatmaps. $\widehat{B}$ is of full column rank and has 201 non-zero rows.}
     \end{figure}
 \end{frame}
 
@@ -119,7 +119,7 @@
         
         \item Biological finding: 
         
-              Each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants.\footnotetext[1]{Gustin, M. C., Albertyn, J., Alexander, M. and Davenport, K. (1998) Map kinase pathways in the yeast saccharomyces cerevisiae. Microbiology and Molecular Biology Reviews, 62, 1264–1300.}
+              Each signaling pathway involves only a subset of genes\footnote[1]{Gustin, M. C., Albertyn, J., Alexander, M. and Davenport, K. (1998) Map kinase pathways in the yeast saccharomyces cerevisiae. Microbiology and Molecular Biology Reviews, 62, 1264–1300.}, which are regulated by only a few genetic variants.
 
         \item Corresponding characteristics in statistics: 
         
@@ -132,9 +132,9 @@
     promotes the SVD decomposition $B= UDV$ and then impose penalty into $U$, $D$ and $V$ simultaneously. 
     \begin{equation*}\footnotesize
         \begin{split}
-            & (\widehat{\mathbf{D}}, \widehat{\mathbf{U}}, \widehat{\mathbf{V}}) \\
-            = & \underset{\mathbf{D}, \mathbf{U}, \mathbf{V}}{\arg \min }\left\{\frac{1}{2} \left\|\mathbf{X}-\mathbf{U D V}^{T}\right\|_{F}^{2}+\lambda_{d}\|\mathbf{D}\|_{1}+\lambda_{a} \rho_{a}(\mathbf{U D})+\lambda_{b} \rho_{b}(\mathbf{V D})\right\} \\ 
-            & \quad\quad \text { subject to } \mathbf{U}^{T} \mathbf{U}=\mathbf{I}_{m}, \quad \mathbf{V}^{T} \mathbf{V}=\mathbf{I}_{m} 
+            & (\widehat{D}, \widehat{U}, \widehat{V}) \\
+            = & \underset{D, U, V}{\arg \min }\left\{\frac{1}{2} \left\|X- UDV^{T}\right\|_{F}^{2}+\lambda_{d}\|D\|_{1}+\lambda_{a} \rho_{a}(\mathbf{U D})+\lambda_{b} \rho_{b}(VD)\right\} \\ 
+            & \quad\quad \text { subject to } U^{T} U=\mathbf{I}_{m}, \quad V^{T} V=\mathbf{I}_{m} 
         \end{split}
     \end{equation*}
 \end{frame}
