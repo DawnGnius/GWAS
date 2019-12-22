@@ -32,7 +32,7 @@
 \begin{frame}\frametitle{Yeast Data}
     \begin{enumerate}
         \item Why Yeast?
-        \item What does our data describe?
+        \item What does our data represent?
         \item How is the data measured? 
     \end{enumerate}
 \end{frame}
@@ -70,51 +70,64 @@
     \end{table}
 \end{frame}
 
-\begin{frame}\frametitle{Structure of data}
+\begin{frame}\frametitle{How is the data measured?}
     \begin{itemize}
-        \item the value of the eQTLs: 1 or 2
-    
-        (still need some explanations here)
-        % we add 1 to each original value for the convenient for mathematical processing
+        \item values in the genotype matrix: 1 or 2 (Why?)
+    	 \begin{itemize}
+    	 	\item three possibilities at each SNP locus: AA, AB and BB
+    	 	\item(dominant model for allele B) AA=0 vs. AB, BB=1 
+    	 	\item(recessive model for allele B) BB=1 vs. AA, AB=0
+    	 	\item(dominant model for allele B) AB=1 vs. AA, BB=0
+    	 \end{itemize}
+        
+        \item add 1 to original values for  mathematical processing
 
-        \item Y: almost continuous because of the use of microarray technology (microarray) to sequence the samples.
+        \item values in the gene expression matrix:  
+        
+        \textbf{continuous values} because of the use of microarray test the expression levels
       
     \end{itemize}
 \end{frame}
 
-\begin{frame}\frametitle{Structre of Data}
-    \begin{itemize}
-%        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
-%        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
-        \item a few functionally distinct signaling pathways of genes exist
-        \item the association structure between the eQTLs and the gene is of low rank
-        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
-    \end{itemize}
-\end{frame}
+%\begin{frame}\frametitle{How is the data measured?}
+%    \begin{itemize}
+%%        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
+%%        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
+%        \item a few functionally distinct signaling pathways of genes exist
+%        \item the association structure between the eQTLs and the gene is of low rank
+%        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
+%    \end{itemize}
+%\end{frame}
 
 
 
    
 
-\begin{frame}\frametitle{Question of Interesting}
-    \begin{enumerate}
-        % \renewcommand{\labelenumi}{(\theenumi)}
-        \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
-        \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
-    \end{enumerate}
-\end{frame}
+%\begin{frame}\frametitle{Question of Interesting}
+%    \begin{enumerate}
+%        % \renewcommand{\labelenumi}{(\theenumi)}
+%        \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
+%        \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
+%    \end{enumerate}
+%\end{frame}
 
 \begin{frame}\frametitle{ Questions}
-    \begin{block}{Question of Interesting}
+
+    \begin{block}{Questions of Interest}
         \begin{itemize}
-        \item How the eQTLs influence the expression level of genes in the yeast MAPK signaling pathways by analyzing a yeast dataset?
+        \item How eQTLs influence gene expression levels in the yeast MAPK signaling pathways ?
         \item Which group of eQTLs affect certain group of genes?
         \end{itemize}
+        
+        
     \end{block}
     
-    \begin{block}{equivalent question in statistics}
-        reveal multiple distinct associations between subsets of genes and subsets of genetic variants(eQTLs)
+    \begin{block}{Equivalent Question in Statistics}
+        Reveal multiple distinct associations between subsets of genes(eQTLs) and subsets of genetic variants
     \end{block}
+    	\begin{itemize}
+		\item eQTLs (expression Quantitative Trait Locis): some special SNPs which are associated with gene expression. 
+	\end{itemize}
 \end{frame}
 
 
@@ -124,12 +137,18 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Processing Markers Data}
-
-    \begin{itemize}
-        \item Hierarchical clustering by complete distance ...
-        \item Select representative markers.
-        \item Marginal gene-marker association analysis.
+    \frametitle{Processing Genotype Data}
+	\begin{itemize}
+	\item Raw: $\mathop{dim(X)}\limits_{\text{genotype matrix}}=\mathop{3244}\limits_{\text{SNPs}} \times \mathop{112}\limits_{\text{samples}} $
+	\item Processing steps:
+	\begin{enumerate}
+		\item combine SNPs into blocks
+		
+		Criterion: SNPs within a block differed by at most 1 sample
+		\item select the mode as the representative SNP for each block
+	\end{enumerate}
+	\item Processed: $dim(X)=\mathop{112}\limits_{\text{samples}}\times\mathop{949}\limits_{\text{SNPs}}$
+        %\item Marginal gene-marker association analysis.
     \end{itemize}
 \end{frame}
 
@@ -139,4 +158,7 @@
     We choose genes according to MAPK signaling pathways \footnote[2]{Kanehisa, M., Goto, S., Sato, Y., Kawashima, M., Furumichi, M. and Tanabe, M. (2014) Data, information, knowledge and principle: Back to metabolism in KEGG. Nucleic Acids Res., 42, D199–D205.}
 
     * * Add pictures ?? 
+    \begin{itemize}
+    \item Processed: $dim(Y)=\mathop{112}\limits_{\text{samples}}\times\mathop{53}\limits_{\text{genes}}$
+    \end{itemize}
 \end{frame}
