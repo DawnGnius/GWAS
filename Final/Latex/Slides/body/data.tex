@@ -35,7 +35,7 @@
             Organism                        &   Saccharomyces cerevisiae                \\ \hline
             Experiment type                 &   Expression profiling by array           \\ \hline
             \multirow{3}{*}{Data Size}      &   112 yeast samples. Data set consists of $3244$ genotypes and $6216$ genes.  $X \in \mathbb{R}^{3244\times112}$, $Y \in \mathbb{R}^{6216\times112}$. \\ \hline
-           \multirow{3}{*}{Description}     &   cDNA array of saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$. \\ \hline
+           \multirow{3}{*}{Description}     &   cDNA array of saccharomyces cerevisiae ORFs. Genotype\footnote[1]{eQTLs (expression Quantitative Trait Locis): some special SNPs which are associated with gene expression. } is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$. \\ \hline
         \end{tabular}
         \caption{Information About Data}
     \end{table}
@@ -56,15 +56,15 @@
 % ----------------------------------------------------------------------------------------
 % 	PAGE Other informations ????
 % ----------------------------------------------------------------------------------------
-\begin{frame}\frametitle{Structre of Data}
-    \begin{itemize}
-%        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
-%        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
-        \item a few functionally distinct signaling pathways of genes exist
-        \item the association structure between the eQTLs and the gene is of low rank
-        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
-    \end{itemize}
-\end{frame}
+% \begin{frame}\frametitle{Structre of Data}
+%     \begin{itemize}
+% %        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
+% %        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
+%         \item a few functionally distinct signaling pathways of genes exist
+%         \item the association structure between the eQTLs and the gene is of low rank
+%         \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
+%     \end{itemize}
+% \end{frame}
    
 
 
@@ -85,12 +85,12 @@
 \begin{frame}\frametitle{Question of Interesting}
     \begin{block}{Question of Interesting}
         \begin{itemize}
-        \item How the eQTLs influence the expression level of genes in the yeast MAPK signaling pathways by analyzing a yeast dataset?
+        \item How eQTLs influence gene expression levels in the yeast MAPK signaling pathways ?
         \item Which group of eQTLs affect certain group of genes?
         \end{itemize}
     \end{block}
     
     \begin{block}{Equivalent Question in Statistics}
-        Reveal multiple distinct associations between subsets of genes and subsets of genetic variants(eQTLs).
+        Reveal multiple distinct associations between subsets of genes(eQTLs) and subsets of genetic variants. 
     \end{block}
 \end{frame}

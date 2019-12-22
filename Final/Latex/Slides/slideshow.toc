@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@sectionintoc {2}{Yeast Gene Expression Data}{5}{0}{2}
+\beamer@sectionintoc {3}{Data Preparation}{9}{0}{3}
+\beamer@sectionintoc {4}{Methodology}{13}{0}{4}
+\beamer@sectionintoc {5}{Summary}{27}{0}{5}

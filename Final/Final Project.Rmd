@@ -41,6 +41,15 @@ Values are the original submitter-supplied data upon which GEO2R calculations ar
 Viewing the distribution is important for determining if your selected Samples are suitable for comparison; see Limitations and caveats for more information. 
 Generally, median-centered values are indicative that the data are normalized and cross-comparable. 
 
+
+In **SOFAR**, the data is finally reduced to the size of $n=112, p=605, q=54$. 
+
+The gene expression values are discretized around the median and have two states, $1$ (above or equal to median) and $-1$ (below median). 
+There are two genotype states: $1$ or $2$. 
+
+
+In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
+
 ```{r, message=FALSE}
 rm(list=ls())
 DEBUG <- FALSE
@@ -61,31 +70,7 @@ exp <- yeast$exp
 
 ### Data Preprocessing
 
-In **SOFAR**, the data is finally reduced to the size of $n=112, p=605, q=54$. 
 
-The gene expression values are discretized around the median and have two states, $1$ (above or equal to median) and $-1$ (below median). 
-There are two genotype states: $1$ or $2$. 
-
-
-In **trigger**, *marker*: A $3244$ × $112$ genotype matrix; *exp*: A $6216$ × $112$ gene expression matrix
-
-```{r, message=FALSE}
-rm(list=ls())
-DEBUG <- FALSE
-
-# load data from trigger package or tmp.RData
-if (TRUE){
-  library(trigger)
-  data(yeast)
-} else{
-  load('tmp.RData')
-}
-
-library(stats)
-
-marker <- yeast$marker
-exp <- yeast$exp
-```
 
 Distance clustering, d <= 1
 
@@ -138,6 +123,7 @@ for (ii in 1:max(out.id)) {
 }
 
 X <- t(marker[count,])
+idx.X <- count
 ```
 
 Next, I am going to reduce the dimension of $Y$. 
@@ -150,7 +136,7 @@ idx.exp <- sapply(MAPK.pathway.name, function(x) which(rownames(exp) == x))
 Y <- t(exp[idx.exp,])
 
 if (!DEBUG){
-  rm("idx.exp", "MAPK.pathway.name")
+  rm("idx.exp")
 }
 if (!DEBUG){
   rm("count", "ii", "jj", "out.dist", "out.id", "tmp.count", "tmp.idx", "tmp.mostfreq", "tmp.rec", "want", "hc1.complete", "tmp", "tmp.unique")
@@ -199,9 +185,12 @@ library(ggpubr)     # for ggarrange
 
 # lasso
 beta.hat <- matrix(0., dim(X)[2], dim(Y)[2])
+a0 <- matrix(0., ncol=ncol(Y))
 for (ii in 1:dim(Y)[2]) {
   fit.cv <- glmnet::cv.glmnet(X, Y[,ii])
-  beta.hat[, ii] <- - as.matrix(glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)$beta)
+  fit.glmnet <- glmnet::glmnet(X, Y[,ii], lambda=fit.cv$lambda.min)
+  beta.hat[, ii] <- as.matrix(fit.glmnet$beta)
+  a0[1, ii] <- fit.glmnet$a0                          # with intercept
 }
 
 # heatmap
@@ -209,7 +198,7 @@ gene_names <- colnames(Y)
 sample_num <- 1:112
 df_lasso <- expand.grid(gene_names, sample_num)
 df_lasso$fill1 <- as.vector(t(Y))
-df_lasso$fill2 <- as.vector(t(X %*% beta.hat))
+df_lasso$fill2 <- as.vector(t(X %*% beta.hat + matrix(1., nrow=nrow(X)) %*% a0))   # with intercept
 p1_real <-  ggplot(df_lasso, aes(Var1, Var2, fill = fill1)) +
   geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
   theme(panel.background = element_rect(fill = 'white', colour = 'white'),
@@ -246,6 +235,57 @@ Also, heatmap shows that lasso loses many a detials of $Y$.
 There are `r length(which(rowSums(abs(beta.hat)) != 0))` nonzero rows in $\hat{C}$. 
 Of couse, this method does not satisfy the requirement to explain the correlation between $Y$. 
 Because it just consider each $Y_j$ at each step. 
+
+### Grouped Regression Model
+```{r, eval=FALSE}
+library(grpreg)
+# lambda.group <- cv.grpreg(X, Y, )$lambda.min
+res.group <- grpreg(X, Y, lambda=0.001)
+beta.group <- t(res.group$beta[, , 1])
+
+heatmap(Y, Rowv=NA, Colv=NA)
+heatmap(cbind(matrix(1., nrow=nrow(X)), X) %*% beta.group, Rowv=NA, Colv=NA)
+
+gene_names <- colnames(Y)
+sample_num <- 1:112
+df_lasso <- expand.grid(gene_names, sample_num)
+df_lasso$fill1 <- as.vector(t(Y))
+df_lasso$fill2 <- as.vector(t(matrix(1., nrow=nrow(X)), X) %*% beta.group))   # with intercept
+p1_real <-  ggplot(df_lasso, aes(Var1, Var2, fill = fill1)) +
+  geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
+  theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0,
+      size = 4.5,
+      hjust = .5),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) + 
+  ggtitle("Real Y")
+p2_lasso <- ggplot(df_lasso, aes(Var1, Var2, fill = fill2)) +
+  geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
+  theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0,
+      size = 4.5,
+      hjust = .5),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) + 
+  ggtitle("Estimated by GRPREG")
+p_lasso <- ggarrange(p1_real, p2_lasso, nrow = 1)
+p_lasso
+
+```
+
+The rank of estimated coefficient matrix $C$ is `r qr(beta.group)$rank`, it means that $\hat{C}$ is full rank. 
+Also, heatmap shows that lasso loses many a detials of $Y$. 
+There are `r length(which(rowSums(abs(beta.group)) != 0))` nonzero rows in $\hat{C}$. 
+Of couse, this method does not satisfy the requirement to explain the correlation between $Y$. 
 
 ### Multi response variable
 
@@ -379,4 +419,13 @@ heatmap_plot(res.sofar)
 
 # plot sofar
 svd_plot(res.sofar)
+```
+
+Check the result. 
+```{r, eval=FALSE}
+library(trigger)
+data(yeast)
+var.selected <- idx.X[which(u.rowsums != 0)]
+marker.selected <- yeast$marker.pos[var.selected, ]
+gene.selected <- MAPK.pathway.name[which(v.rowsums != 0)]
 ```
