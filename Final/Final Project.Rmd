@@ -250,7 +250,7 @@ gene_names <- colnames(Y)
 sample_num <- 1:112
 df_lasso <- expand.grid(gene_names, sample_num)
 df_lasso$fill1 <- as.vector(t(Y))
-df_lasso$fill2 <- as.vector(t(matrix(1., nrow=nrow(X)), X) %*% beta.group))   # with intercept
+df_lasso$fill2 <- as.vector(t(cbind(matrix(1., nrow=nrow(X)), X) %*% beta.group))   # with intercept
 p1_real <-  ggplot(df_lasso, aes(Var1, Var2, fill = fill1)) +
   geom_tile() + scale_fill_gradient2(low = "red", high = "blue") + 
   theme(panel.background = element_rect(fill = 'white', colour = 'white'),

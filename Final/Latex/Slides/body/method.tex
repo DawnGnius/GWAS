@@ -7,7 +7,7 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Processing SNPs Data}
+    \frametitle{Processing Genotype Data}
 
     \begin{enumerate}
         \item Hierarchical clustering by complete distance.
@@ -16,7 +16,7 @@
 
         \item Select representative SNPs. 
         
-        For each block, we choose a representative with the most repetitions. 
+        For each block, we choose a representative SNP with the most repetitions. 
 
         \item[$\blacksquare$] Marginal gene-marker association analysis. 
         
@@ -41,9 +41,9 @@
         X\in\mathbb{R}^{949\times112} \quad,\quad Y\in\mathbb{R}^{53\times112}
     \end{equation*}
 
-    Hereinafter, we denote $p$ as the number of explanatory variables, $q$ as the number of response variable, $n$ as the number of samples, $E$ as the random error matrix, and $C$ as the coefficient matrix, we can construct a multi-response linear model
+    Hereinafter, we denote $p$ as the number of explanatory variables, $q$ as the number of response variable, $n$ as the number of samples, $E$ as the random error matrix, and $B$ as the coefficient matrix, we can construct a multi-response linear model
     \begin{equation*}
-        Y = XC + E. 
+        Y = XB + E. 
     \end{equation*}
     
 \end{frame}
@@ -59,6 +59,17 @@
 \end{frame}
 
 \begin{frame}
+    \frametitle{Brief Introduction}
+
+    \begin{itemize}
+        \item Linear Regression Model
+        \item Multi-response
+        \item High Dimensional Problem
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
     \frametitle{Uni-Response Regression}
 
     Let $Y_j$ denote the $j$-th column of $Y$, represent the expression level of $j$-th gene. 
@@ -66,7 +77,7 @@
     An intuitive method is to regress each $Y_j$ with $X$, and we will get $q$ linear models. 
     We can use LASSO to get the estimated coefficient vector $\hat{\beta}_{(j)}\in\mathbb{R}^{p}$. 
     
-    Then combine $q$ coefficient vectors $\hat{\beta}_{(j)}$ into a matrix $\hat{\boldsymbol{\beta}}\in\mathbb{R}^{p\times q}$ by column. 
+    Then combine $q$ coefficient vectors $\hat{\beta}_{(j)}$ into a matrix $\widehat{B}\in\mathbb{R}^{p\times q}$ by column. 
 \end{frame}
 
 \begin{frame}
@@ -81,32 +92,35 @@
 
 \begin{frame}
     \frametitle{Result of LASSO cont.}
-    LASSO is a kind of shinkage estiamtion method. 
-    So a sparse $\hat{\beta}_{(j)}$ is expected for each $j\in\{ 1,2,\dots,q \}$. 
+    \begin{itemize}
+        \item LASSO is a kind of shinkage estiamtion method. 
+        So a sparse $\hat{\beta}_{(j)}$ is expected for each $j\in\{ 1,2,\dots,q \}$. 
 
-    But $\hat{\boldsymbol{\beta}}$ may not be sparse by row. 
-    Actually, there are $602$ nonzero rows in $\hat{\boldsymbol{\beta}}$ which is also of full column rank. 
+        \item But $\widehat{B}$ may not be sparse by row. 
+        
+        Actually, there are $602$ nonzero rows in $\widehat{B}$ which has full column rank. 
+    \end{itemize}
 \end{frame}
 
 \begin{frame}\frametitle{Group Sparse Linear Regression}
-    Group sparse linear regression for multitask learning\footnote[1]{Dai, Ran, and Rina Foygel Barber. (2016)}
+    Group sparse linear regression for multitask learning \footnote[1]{Dai, Ran, and Rina Foygel Barber. (2016)}
     \begin{equation}
-        \widehat{B}=\underset{B}{\arg \min }\left\{\frac{1}{2}\|Y-X B\|_{F}^{2}+\lambda\|B\|_{\ell_{1} / \ell_{2}}\right\}
+        \widehat{B}=\underset{B}{\arg \min }\left\{\frac{1}{2}\|Y-X B\|_{F}^{2}+\lambda\|B\|_{(2,1)}\right\}
     \end{equation}
     where $\|\cdot\|_{F}$ is the Frobenius norm,% $\fronorm{M}=\sqrt{\sum_{ij}M_{ij}^2}$, 
-    and where the $\ell_1/\ell_2$ norm in the penalty is given by
-    $\|B\|_{\ell_1/\ell_2} = \sum_i \sqrt{\sum_j B_{ij}^2}$.
+    and where the $(2,1)$ norm in the penalty is given by
+    $\|B\|_{(2,1)} = \sum_i \sqrt{\sum_j B_{ij}^2}$.
 
-    This penalty promotes row-wise sparsity of $B$: for large $\lambda$, $\widehat{B}$ will have many zero rows, however the nonzero rows will
-    themselves be dense (no entry-wise sparsity).
+    This penalty promotes rowwise sparsity of $\widehat{B}$.
+    % for large $\lambda$, $\widehat{B}$ will have many zero rows, however the nonzero rows will themselves be dense (no entrywise sparsity).
 \end{frame}
 
 \begin{frame}
-    \frametitle{Result of GRPREG}
+    \frametitle{Result of GLasso}
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.8\textwidth]{./figs/heatmap_grpreg.pdf}
-        \caption{Heatmaps. $\widehat{B}$ is of full column rank and has 201 non-zero rows.}
+        \caption{Heatmaps. $\widehat{B}$ has full column rank and 201 non-zero rows.}
     \end{figure}
 \end{frame}
 
@@ -123,20 +137,20 @@
 
         \item Corresponding characteristics in statistics: 
         
-              The association structure between the eQTLs and the gene is of low rank.
+              The association structure between the eQTLs and the gene is of low rank and sparsity.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Multi-Response Regression}
     SOFAR \footnote[1]{Uematsu, Y., Fan, Y., Chen, K., Lv, J., \& Lin, W. (2019). SOFAR: large-scale association network learning. IEEE Transactions on Information Theory.} 
-    promotes the SVD decomposition $B= UDV$ and then impose penalty into $U$, $D$ and $V$ simultaneously. 
-    \begin{equation*}\footnotesize
+    uses the SVD decomposition $B= UDV^T$ and then impose penalties into $U$, $D$ and $V$ respectively. 
+    \begin{equation}\footnotesize
         \begin{split}
             & (\widehat{D}, \widehat{U}, \widehat{V}) \\
-            = & \underset{D, U, V}{\arg \min }\left\{\frac{1}{2} \left\|X- UDV^{T}\right\|_{F}^{2}+\lambda_{d}\|D\|_{1}+\lambda_{a} \rho_{a}(\mathbf{U D})+\lambda_{b} \rho_{b}(VD)\right\} \\ 
+            = & \underset{D, U, V}{\arg \min }\left\{\frac{1}{2} \left\|X- UDV^{T}\right\|_{F}^{2}+\lambda_{d}\|D\|_{1}+\lambda_{a} \rho_{a}(U D)+\lambda_{b} \rho_{b}(VD)\right\} \\ 
             & \quad\quad \text { subject to } U^{T} U=\mathbf{I}_{m}, \quad V^{T} V=\mathbf{I}_{m} 
         \end{split}
-    \end{equation*}
+    \end{equation}
 \end{frame}
 
 \begin{frame}
@@ -153,7 +167,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.75\textwidth]{./figs/latent1.pdf}
-        \caption{Scatterplots of the latent responses versus the latent predictors in three SVD layers for the yeast data estimated by the SOFAR method}
+        \caption{Scatter plots of the latent responses versus the latent predictors in three SVD layers for the yeast data estimated by the SOFAR method}
     \end{figure}
 \end{frame}
 
@@ -183,7 +197,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.75\textwidth]{./figs/letent2.pdf}
-        \caption{Scatterplots of the latent responses versus the latent predictors in three SVD layers for the yeast data estimated by the SOFAR method}
+        \caption{Scatter plots of the latent responses versus the latent predictors in three SVD layers for the yeast data estimated by the SOFAR method}
     \end{figure}
 \end{frame}
 
@@ -191,7 +205,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.75\textwidth]{./figs/latent4.pdf}
-        \caption{Scatterplots of the $4$th latent responses versus the latent predictors for the yeast data estimated by the SOFAR method}
+        \caption{Scatter plots of the $4$th latent responses versus the latent predictors for the yeast data estimated by the SOFAR method}
     \end{figure}
 \end{frame}
 
