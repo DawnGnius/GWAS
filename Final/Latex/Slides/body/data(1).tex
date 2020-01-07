@@ -1,0 +1,164 @@
+\section{Real Data: Yeast}
+\begin{frame}
+    \sectionpage
+\end{frame}
+
+\begin{frame}\frametitle{Yeast Data}
+    The yeast data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990. 
+    The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a \footnote[1]{Brem, R. B., Kruglyak, L. (2005). The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences, 102(5), 1572-1577.}. 
+
+%    Gene expression measurements were obtained for $6216$ open reading frames in $112$ segregants, and genotypes were identified at $3244$ markers. 
+
+\end{frame}
+
+%\begin{frame}
+%    \begin{table}[h]
+%        \centering
+%        \begin{tabular}{|l|p{7cm}|}
+%            \hline
+%            Title                           &   Genetic complexity in yeast transcripts \\ \hline
+%            Organism                        &   Saccharomyces cerevisiae                \\ \hline
+%            Experiment type                 &   Expression profiling by array           \\ \hline
+%            \multirow{4}{*}{Data Size}      &   Data set consists of a $3244\times112$ \textbf{genotype matrix} with $3244$ genotypes in rows and $112$ samples in columns and a $6216\times112$ \textbf{gene expression matrix} with $6216$ genes in rows and $112$ samples in columns.  \\ \hline
+%            \multirow{3}{*}{Description}    &   cDNA array of Saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$\\ 
+%            \hline
+%        \end{tabular}
+%        \caption{Information About Data}
+%    \end{table}
+%
+%\end{frame}
+
+
+\begin{frame}\frametitle{Yeast Data}
+    \begin{enumerate}
+        \item Why Yeast?
+        \item What does our data represent?
+        \item How is the data measured? 
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}\frametitle{Why yeast?}
+    \begin{itemize}
+    	\item complete genome sequence  
+		\begin{itemize}
+			\item no missing data 
+		\end{itemize}    	
+		\item share some genes with human cells   
+		\begin{itemize}
+			\item study human diseases
+			\item test new drugs
+		\end{itemize}		     
+        %\item single-celled eukaryotes with short life cycle
+
+        
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Data Description}
+\begin{table}[h]
+        \centering
+        \begin{tabular}{|l|p{7cm}|}
+            \hline
+            Title                           &   Genetic complexity in yeast transcripts \\ \hline
+            Organism                        &   Saccharomyces cerevisiae (or Baker's yeast)                \\ \hline
+            Experiment type                 &   Expression profiling by array           \\ \hline
+            \multirow{4}{*}{Data Size}      &   Data set consists of a $3244\times112$ \textbf{genotype matrix} with $3244$ genotypes in rows and $112$ samples in columns and a $6216\times112$ \textbf{gene expression matrix} with $6216$ genes in rows and $112$ samples in columns.  \\ \hline
+%            \multirow{3}{*}{Description}    &   cDNA array of Saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$\\ 
+            %\hline
+        \end{tabular}
+        \caption{Information About Data}
+    \end{table}
+\end{frame}
+
+\begin{frame}\frametitle{How is the data measured?}
+    \begin{itemize}
+        \item values in the genotype matrix: 1 or 2 (Why?)
+    	 \begin{itemize}
+    	 	\item three possibilities at each SNP locus: AA, AB and BB
+    	 	\item(dominant model for allele B) AA=0 vs. AB, BB=1 
+    	 	\item(recessive model for allele B) BB=1 vs. AA, AB=0
+    	 	\item(dominant model for allele B) AB=1 vs. AA, BB=0
+    	 \end{itemize}
+        
+        \item add 1 to original values for  mathematical processing
+
+        \item values in the gene expression matrix:  
+        
+        \textbf{continuous values} because of the use of microarray test the expression levels
+      
+    \end{itemize}
+\end{frame}
+
+%\begin{frame}\frametitle{How is the data measured?}
+%    \begin{itemize}
+%%        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
+%%        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
+%        \item a few functionally distinct signaling pathways of genes exist
+%        \item the association structure between the eQTLs and the gene is of low rank
+%        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
+%    \end{itemize}
+%\end{frame}
+
+
+
+   
+
+%\begin{frame}\frametitle{Question of Interesting}
+%    \begin{enumerate}
+%        % \renewcommand{\labelenumi}{(\theenumi)}
+%        \item How the yeast eQTLs(expression quantitative trait loci), which are regions of the genome containing DNA sequence variants, influence the expression level of genes? 
+%        \item What is the influence of eQTLs on the genes involved in the yeast MAPK signaling pathways?
+%    \end{enumerate}
+%\end{frame}
+
+\begin{frame}\frametitle{ Questions}
+
+    \begin{block}{Questions of Interest}
+        \begin{itemize}
+        \item How eQTLs influence gene expression levels in the yeast MAPK signaling pathways ?
+        \item Which group of eQTLs affect certain group of genes?
+        \end{itemize}
+        
+        
+    \end{block}
+    
+    \begin{block}{Equivalent Question in Statistics}
+        Reveal multiple distinct associations between subsets of genes(eQTLs) and subsets of genetic variants
+    \end{block}
+    	\begin{itemize}
+		\item eQTLs (expression Quantitative Trait Locis): some special SNPs which are associated with gene expression. 
+	\end{itemize}
+\end{frame}
+
+
+\section{Data Preparation}
+\begin{frame}
+    \sectionpage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Processing Genotype Data}
+	\begin{itemize}
+	\item Raw: $\mathop{dim(X)}\limits_{\text{genotype matrix}}=\mathop{3244}\limits_{\text{SNPs}} \times \mathop{112}\limits_{\text{samples}} $
+	\item Processing steps:
+	\begin{enumerate}
+		\item combine SNPs into blocks
+		
+		Criterion: SNPs within a block differed by at most 1 sample
+		\item select the mode as the representative SNP for each block
+	\end{enumerate}
+	\item Processed: $dim(X)=\mathop{112}\limits_{\text{samples}}\times\mathop{949}\limits_{\text{SNPs}}$
+        %\item Marginal gene-marker association analysis.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Processing Expression Level Data}
+
+    We choose genes according to MAPK signaling pathways \footnote[2]{Kanehisa, M., Goto, S., Sato, Y., Kawashima, M., Furumichi, M. and Tanabe, M. (2014) Data, information, knowledge and principle: Back to metabolism in KEGG. Nucleic Acids Res., 42, D199–D205.}
+
+    * * Add pictures ?? 
+    \begin{itemize}
+    \item Processed: $dim(Y)=\mathop{112}\limits_{\text{samples}}\times\mathop{53}\limits_{\text{genes}}$
+    \end{itemize}
+\end{frame}

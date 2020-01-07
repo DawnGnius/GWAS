@@ -4,22 +4,27 @@
 \section{Yeast Gene Expression Data}
 \begin{frame}
     \sectionpage 
-    \footnote[1]{The yeast data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990.}
-    \footnote[2]{The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a.}
-    \footnote[3]{Brem, R. B., Kruglyak, L. (2005). The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences, 102(5), 1572-1577.}
+    \footnotetext[1]{The yeast data can be accessed in Gene Expression Omnibus(GEO) by accession number GSE1990.}
+    \footnotetext[2]{The data were derived from a cross between two strains of the budding yeast: BY4716 and RM11-1a.}
+    \footnotetext[3]{Brem, R. B., Kruglyak, L. (2005). The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences, 102(5), 1572-1577.}
 \end{frame}
 
 % ----------------------------------------------------------------------------------------
 % 	PAGE Brief introduction to the data.
 % ----------------------------------------------------------------------------------------
-\begin{frame}\frametitle{Why Yeast?}
-    \begin{enumerate}
-        \item share many genes similar with human cells
+\begin{frame}\frametitle{Why yeast?}
+    \begin{itemize}
+    	\item Complete genome sequence  
+   	
+		\item Share some genes with human cells   
+%		\begin{itemize}
+%			\item study human diseases
+%			\item test new drugs
+%		\end{itemize}		     
+        %\item single-celled eukaryotes with short life cycle
+
         
-        \item single-celled eukaryotes with short life cycle
-        
-        \item the growth can be controlled easily by experimenters
-    \end{enumerate}
+    \end{itemize}
 \end{frame}
 
 % ----------------------------------------------------------------------------------------
@@ -32,10 +37,10 @@
         \begin{tabular}{|l|p{7cm}|}
             \hline
             Title                           &   Genetic complexity in yeast transcripts \\ \hline
-            Organism                        &   Saccharomyces cerevisiae                \\ \hline
+            Organism                        &   Saccharomyces cerevisiae (Baker's yeast)\\ \hline
             Experiment type                 &   Expression profiling by array           \\ \hline
             \multirow{3}{*}{Data Size}      &   112 yeast samples. Data set consists of $3244$ genotypes and $6216$ genes.  $X \in \mathbb{R}^{3244\times112}$, $Y \in \mathbb{R}^{6216\times112}$. \\ \hline
-           \multirow{3}{*}{Description}     &   cDNA array of saccharomyces cerevisiae ORFs. Genotype is category variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$. \\ \hline
+           \multirow{3}{*}{Description}     &   Genotype\footnote[1]{eQTLs (expression Quantitative Trait Locis): some special SNPs which are associated with gene expression. } is a categorical variable, and gene expression level is given by  $log_2(\text{sample} / \text{BY reference})$. \\ \hline
         \end{tabular}
         \caption{Information About Data}
     \end{table}
@@ -56,15 +61,15 @@
 % ----------------------------------------------------------------------------------------
 % 	PAGE Other informations ????
 % ----------------------------------------------------------------------------------------
-\begin{frame}\frametitle{Structre of Data}
-    \begin{itemize}
-%        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
-%        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
-        \item a few functionally distinct signaling pathways of genes exist
-        \item the association structure between the eQTLs and the gene is of low rank
-        \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
-    \end{itemize}
-\end{frame}
+% \begin{frame}\frametitle{Structre of Data}
+%     \begin{itemize}
+% %        \item analyze the influence of eQTLs(the quantitative trait loci) on the expression level of genes in the yeast MAPK signaling pathways. 
+% %        \item Biological characteristics of variables in the study(Gustin et al.(1998), and Brem and Kruglyak(2005)):
+%         \item a few functionally distinct signaling pathways of genes exist
+%         \item the association structure between the eQTLs and the gene is of low rank
+%         \item each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants
+%     \end{itemize}
+% \end{frame}
    
 
 
@@ -82,15 +87,15 @@
 %     \end{enumerate}
 % \end{frame}
 
-\begin{frame}\frametitle{Question of Interesting}
-    \begin{block}{Question of Interesting}
+\begin{frame}\frametitle{Question of Interest}
+    \begin{block}{Question of Interest}
         \begin{itemize}
-        \item How the eQTLs influence the expression level of genes in the yeast MAPK signaling pathways by analyzing a yeast dataset?
+        \item How eQTLs influence gene expression levels in the yeast MAPK signaling pathways ?
         \item Which group of eQTLs affect certain group of genes?
         \end{itemize}
     \end{block}
     
     \begin{block}{Equivalent Question in Statistics}
-        Reveal multiple distinct associations between subsets of genes and subsets of genetic variants(eQTLs).
+        Reveal multiple distinct associations between subsets of genes (eQTLs) and subsets of genetic variants. 
     \end{block}
 \end{frame}
