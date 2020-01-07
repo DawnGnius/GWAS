@@ -1,0 +1,150 @@
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
+\hypersetup{
+            pdftitle={Summary on A Selective Overview of Variable Selection in High Dimensional Feature Space},
+            pdfauthor={Liu Huihang},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\usepackage[]{natbib}
+\bibliographystyle{plainnat}
+
+\title{Summary on A Selective Overview of Variable Selection in High
+Dimensional Feature Space}
+\author{Liu Huihang}
+\date{2020.1.6}
+
+\begin{document}
+\maketitle
+
+\hypertarget{review-of-model-selection-method}{%
+\subsection{Review of model selection
+method}\label{review-of-model-selection-method}}
+
+High dimensional statistical problems arise from diverse fields of
+scientific research and technological development. Variable selection
+plays a pivotal role in contemporary statistical learning and scientific
+discoveries.
+
+Consider the linear regression model \begin{equation}
+\mathbf{y}=\mathbf{X} \boldsymbol{\beta}+\varepsilon
+\end{equation}
+
+The first method we learn is Lasso \citet{tibshirani1996regression},
+\begin{equation}
+  \frac{1}{n} \sum_{i=1}^n \left( y_i - x_i^T \beta \right)^2 + \| \beta \|_1
+\end{equation} It is easy to understand and the speed of computation is
+faster than solving a \(\|\cdot\|_0\) penalty function which is named as
+best sebset selection method \begin{equation}
+  \frac{1}{n} \sum_{i=1}^n \left( y_i - x_i^T \beta \right)^2 + \| \beta \|_0
+\end{equation} But this method takes a very long time to solve at that
+time. Thirty years later, we have the latest methods to solve this
+problem in an acceptable time \citet{wen2017bess}.
+
+Later many a methods were developed to imporve the result of selection.
+They used the same framework to constrain the problem as following
+\begin{equation}
+  \min _{\boldsymbol{\beta} \in \mathbf{R}^{p}}\left\{\frac{1}{2 n}\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|^{2}+\sum_{j=1}^{p} p_{\lambda}\left(\left|\beta_{j}\right|\right)\right\}
+\end{equation}
+
+For example, SCAD introduced by \citet{fan2001variable} \begin{equation}
+  p_{\lambda}^{\prime}(t)=\lambda\left\{I(t \leq \lambda)+\frac{(a \lambda-t)_{+}}{(a-1) \lambda} I(t>\lambda)\right\} \quad \text { for some } a>2
+\end{equation} where \(p_{\lambda}(0) = 0\) and, often, \(a = 3.7\) is
+used (suggested by a Bayesian argument).
+
+A penalty of similar spirit is the minimax concave penalty (MCP)
+\citet{zhang2011iterative}, whose derivative is given by
+\begin{equation}
+  p_{\lambda}^{\prime}(t)=\frac{(a \lambda-t)_{+}}{a}
+\end{equation}
+
+A family of concave penalties that bridge the \(L_0\) and \(L_1\)
+penalties was studied by \citet{lv2009unified} And \citet{zheng2014high}
+focus on the hard thresholding penalty \begin{equation}
+  p_{\mathrm{H}, \lambda}(t)=\frac{1}{2}\left\{\lambda^{2}-(\lambda-t)_{+}^{2}\right\}, \quad t \geqslant 0
+\end{equation}
+
+Generally speaking, two classes of penalty functions have been proposed
+in the literature: convex ones and concave ones. The \(L_1\) penalty
+tends to yield a larger model than the true one for optimizing
+predictions, and many of the selected variables may be insignificant,
+showing that the resulting method may not be ideal for variable
+selection. The relatively large model size also reduces the
+interpretability of the selected model. When concave penalties is used,
+it is generally difficult to study the properties of the global
+optimizer for concave regularization methods. \citet{fan2013asymptotic}
+characterize theoretically the global optimizer of the regularization
+method with the combined L1 and concave penalty, in the setting of the
+high-dimensional linear model by studying the resulting regularization
+problem \begin{equation}
+  \min _{\boldsymbol{\beta} \in \mathbf{R}^{p}} \left\{\frac{1}{2 n}\|\mathbf{y}-\mathbf{X} \boldsymbol{\beta}\|^{2} +\lambda_{0}\|\beta\|_{1}+\left\|p_{\lambda}(\beta)\right\|_{1}\right\}
+\end{equation} where \(\lambda_0 = c\{(log p)/n\}^{1/2}\) for some
+positive constant \(c\).
+
+Since then, the classical high dimensonal selection problems have been
+studied well and not many scholars have been studying general
+high-dimensional problems in the world.
+
+Scholars are paying more attention to some faster calculation methods
+and deeper statistical problems such as statistical inference.
+
+\bibliography{library.bib}
+
+\end{document}
