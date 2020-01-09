@@ -1,0 +1,15 @@
+\section{Introduction}
+
+Gene expression levels are fundamental for differences of phenotypic traits among a particular species. SNPs that regulate mRNA expression of a gene are so-called expression Quantitative Trait Loci (eQTL) \citep{schadt2003genetics}. Gene expression levels are treated as quantitative traits for the identification of eQTLs that lead to differences in expression levels.  The study of the relationship between  eQTLs and gene expression may be complex due to the presence of both local and distant genetic effects and shared genetic components across multiple genes \cite{brem2005landscape, cai2012covariate}.  So our biological problem is to study the association between eQTLs and gene expression levels.  Yeast is one of the simplest eukarya with a short life cycle and small genome size, of which growth can be controlled easily by the experimenter. The yeast data is completely sequenced data so that we have enough information to find the association between SNPs and gene expression. Besides, the previous study has discovered that yeast cells share many similar genes with human cells, which means examining genes of yeast helps to learn the roles of them in human disease. Therefore yeast can be a model organism for gene expression study.
+
+In a yeast expression study, researchers often conduct the eQTLs analysis to understand how the SNPs influence the expression level of genes in the yeast MAPK signaling pathways. Some genetic and biochemical analysis has revealed that there are a few functionally distinct signaling pathways of genes \citep{gustin1998map, brem2005landscape}, suggesting that the association structure between the eQTLs and the gene is of low rank, and the pattern of sparsity should be pathway-specific. Furthermore, each signaling pathway involves only a subset of genes, which are regulated by only a few genetic variants, suggesting that each association between the eQTLs and the genes is sparse in both the input and the output. 
+
+From the statistical perspective, we treat gene expression levels as responses and genotypes at SNPs as predictors. Then we convert our biological problem to a multivariate regression problem. And we except sparsity in the regression coefficient matrix in the biological context. Therefore, variable selection is required here, which is precisely what we do in our project.
+
+The rest of the paper is organized as follows. 
+Section~\ref{sec:data} introduces the Yeast data we used and illustrates how we process them. 
+Section~\ref{sec:method}  introduces three different methods we used and discusses their performence. 
+We summarize our results in Section~\ref{sec:summary} by combining the results from both statistical and biological aspects.
+An associated R package implementing the suggested method is available at \url{https://github.com/huihangliu/GWAS/tree/master/Final}. 
+
+% Cai, T. T., Li, H., Liu, W. and Xie, J. Covariate-adjusted precision matrix estimation with an application in genetical genomics. Biometrika, 100, 139–156.2013.

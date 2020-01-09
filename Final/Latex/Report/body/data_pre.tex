@@ -1,8 +1,13 @@
-\section{Yeast Data}
+\section{Yeast Data}\label{sec:data}
+
+% Here we will introduce our data sources and how we process them.
+
+\subsection{Data Describtion}
 
 We explored the effects of different statistical methods by by the analysis of a yeast eQTL data set described by \citet{brem2005landscape}, where $n = 112$ segregants were grown from a cross between two budding yeast strains, BY4716 and RM11-1a. 
 For each of the segregants, gene expression was profiled on microarrays containing $6216$ genes, and genotyping was performed at $2957$ markers. 
 
+Genotype is a categorical variables with a value of $0$ or $1$, and gene expression level is given by $log2(\text{sample}/\text{BY reference})$. 
 
 \subsection{Data Preparation}
 
@@ -17,7 +22,7 @@ To accomplish that, we used hierarchical clustering with complete-linkage criter
 Note that the value of the marker data is only 0 or 1, so we can use any distance function, like Euclidean distance or Manhattan distance, to obtain the same result.
 
 We can further reduce the number of markers, observing that different markers have different functions, and some markers have no effect on the gene expression we want to study. 
-Thus a marginal gene–marker association analysis was then performed to identify markers that are associated with the expression levels of at least two genes with a $p$-value less than $0.05$, resulting in a total of $p = 776$ markers with additional $18.2\%$ reduction . 
+Thus a marginal gene–marker association analysis was then performed to identify markers that are associated with the expression levels of at least two genes with a $p$-value less than $0.05$, resulting in a total of $p = 776$ markers with additional $18.2\%$ reduction. 
 
 
 \subsubsection{Processing Expression Level Data}
@@ -26,7 +31,7 @@ We choose genes according to MAPK signaling pathways \citep{kanehisa2013data} fr
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\textwidth]{./figs/sce04011.png}
+    \includegraphics[width=0.8\textwidth]{./figs/494f01.eps}
     \caption{The yeast MAPK pathway from the KEGG database}
     \label{fig:MAPK}
 \end{figure}
